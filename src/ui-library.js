@@ -41,7 +41,7 @@ export default class Aimware {
             `;
 
             container.innerHTML = `
-<div id="aimware-topbar">
+<div class="aimware-topbar" style="border-bottom: solid 2px #4a58c8;">
 	<div id="aimware-title">
 		<label style="font-size: 20px; color: rgb(240, 240, 240); font-weight: 500px; margin-left: 20px; line-height: 40px;">owopfuck</label>
 		<label style="font-size: 20px; color: rgb(97, 109, 212); font-weight: 500px; line-height: 40px; margin-left: -10px;">.v2</label>
@@ -77,7 +77,52 @@ export default class Aimware {
         tab.className = "aimware-tab";
         this.window.container.querySelector("#aimware-content").appendChild(tab);
 
-        return this;
+        return {
+            addSection: sectionName => {
+                const section = document.createElement("div");
+                section.className = "aimware-section";
+                tab.appendChild(section);
+
+                const sectionLabel = document.createElement("label");
+                sectionLabel.textContent = sectionName;
+                section.appendChild(sectionLabel);
+
+                return {
+                    addButton: (name, callback) => {
+                        const button = document.createElement("button");
+                        button.id = `button-${getFlagName(name)}`;
+                        button.textContent = name;
+                        button.className = "aimware-button";
+                        button.onclick = callback;
+                        section.appendChild(button);
+                    },
+                    addToggle: (name, value, callback) => {
+                        const controlGroup = document.createElement("div");
+                        controlGroup.className = "control-group";
+
+                        const label = document.createElement("label");
+                        label.className = "control control-checkbox";
+
+                        const labelText = document.createElement("label");
+                        labelText.textContent = name;
+
+                        const toggle = document.createElement("input");
+                        toggle.type = "checkbox";
+                        toggle.checked = value;
+                        toggle.onchange = e => callback(e.target.checked);
+
+                        const indicator = document.createElement("div");
+                        indicator.className = "control_indicator";
+
+                        label.appendChild(labelText);
+                        label.appendChild(toggle);
+                        label.appendChild(indicator);
+                        controlGroup.appendChild(label);
+                        section.appendChild(controlGroup);
+                    }
+                }
+            }
+        }
     }
     switchVisibility(value) {
         OWOP.windowSys.windows["owopfuck.v2"].container.parentNode.hidden = !value;
@@ -92,13 +137,13 @@ window.owopfuck = {
             button.classList.remove("aimware-tab-button-active");
         });
         tabs.forEach(tabElement => {
-            tabElement.hidden = true;
+            tabElement.style.display = "none";
         });
         const activeTabButton = document.querySelector(`#aimware-tab-button-${tab}`);
         const activeTab = document.querySelector(`#tab-${tab}`);
         if (activeTabButton && activeTab) {
             activeTabButton.classList.add("aimware-tab-button-active");
-            activeTab.hidden = false;
+            activeTab.style.display = "flex";
         }
     }
 }

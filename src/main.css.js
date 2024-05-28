@@ -21,6 +21,10 @@ export default `.animbuilder-canvas-container {
 #window-aimware {
 	background-color: rgb(17, 19, 20);
 }
+#window-aimware label {
+	color: rgb(230, 230, 230);
+	font-size: 16px;
+}
 .aimware-dropdown > option {
 	background-color: rgb(24, 26, 28);
 	border: 2px solid #222324;
@@ -143,11 +147,6 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
   	margin: 0;
 }
 */
-.aimware-label {
-	margin-left: 15px;
-	color: rgb(230, 230, 230);
-	font-size: 14px;
-}
 .aimware-cbtext {
 	position: absolute;
 	margin-top: 4px;
@@ -161,7 +160,7 @@ hr.aimware-hr {
 	margin-bottom: 5px;
 	margin-top: 3px;
 }
-label.aimware-section {
+.aimware-section > label:first-child {
 	color: rgb(230, 230, 230);
 }
 div.aimware-section {
@@ -171,10 +170,9 @@ div.aimware-section {
 	margin: 0 10px 10px 0;
 	flex: 1;
 }
-div[id^="aimware-tab-"] {
+.aimware-tab {
 	display: flex;
-    margin-left: 10px;
-    margin-top: 8px;
+    padding: 10px;
 	overflow-y: auto;
 }
 #aimware-tablist {
@@ -234,19 +232,19 @@ html, body {
 	padding: 0;
 	margin: 0;
 }
-.aimware-btn {
+.aimware-button {
 	border: 2px solid #222324;
 	border-radius: 3px;
 	background: rgba(200, 200, 200, 0.01);
-	width: 93%;
+	width: 90%;
 	height: 25px;
 	color: rgb(150, 150, 150);
 	font-size: 11.5px;
-	margin-bottom: 1px;
-	margin-top: 2px;
-	margin-left: 10px;
+	
+	margin: 0 auto; /* Center the button horizontally */
+	display: block; /* Needed to use margin auto for centering */
 }
-.aimware-smallbtn {
+.aimware-button-small {
 	border: 2px solid #222324;
 	border-radius: 3px;
 	background: rgba(200, 200, 200, 0.01);
@@ -258,7 +256,7 @@ html, body {
 	margin-top: 2px;
 	margin-left: 10px;
 }
-.aimware-smallbtn2 {
+.aimware-button-small-2 {
 	border: 2px solid #222324;
 	border-radius: 3px;
 	background: rgba(200, 200, 200, 0.01);
@@ -270,20 +268,18 @@ html, body {
 	margin-top: 2px;
 	margin-left: 10px;
 }
-#aimware-topbar {
+.aimware-topbar {
+	border-bottom: solid 2px #4a58c8;
 	background-color: rgb(13, 15, 17);
 	height: 40px;
 }
 .control {
-	display: block;
-	position: relative;
-	padding-left: 25px;
-	margin-bottom: 1px;
-	padding-top: 1px;
-	cursor: pointer;
-	font-size: 16px;
-	margin-left: 10px;
-	padding-bottom: 20px;
+    display: block;
+    position: relative;
+    padding: 5px 0px 10px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
 }
 .control input {
 	position: absolute;
@@ -338,14 +334,14 @@ html, body {
 .control-checkbox input:disabled ~ .control_indicator:after {
 	border-color: #111314;
 }
-table[id^="aimware-"] {
+table.aimware {
 	border-collapse: collapse;
-	color: rgb(75 88 213);
+	color: rgb(75, 88, 213);
 	text-align: center;
 	width: -webkit-fill-available;
 	border: solid 1px rgb(55, 55, 55);
 }
-th[id^="aimware-bots"], td[id^="aimware-bots"] {
+th.aimware, td.aimware {
 	font-size: 12.5px;
 	padding: 2px;
 	text-align: center;
@@ -356,7 +352,7 @@ th[id^="aimware-bots"], td[id^="aimware-bots"] {
 	width: 110px;
 	border: solid 1px rgb(55, 55, 55);
 }
-tr[id^="aimware-"]:first-child {
+tr.aimware:first-child {
 	text-align: center;
 	border: solid 1px rgb(55, 55, 55);
-}`;
+}`
