@@ -3,7 +3,7 @@ import events from "./events.js";
 import AimwareUI from "./ui-library.js";
 import config from "./config.js";
 import OJS from "./OJS.js";
-import bots from "./sharedState.js";
+import { bots } from "./sharedState.js";
 import socket from "./ws-hijacking.js";
 import { getLocalPlayer } from "./utils.js";
 
@@ -72,16 +72,12 @@ function initUI() {
 						'Referer': document.referrer
 					},
 					origin: location.origin
-				})
+				}),
+                simpleChunks: true
             });
-
+            bot.on("id", () => bots.push(bot));
             bot.on("close", () => {
                 bots.splice(bots.indexOf(bot), 1);
-            });
-
-            bot.on("id", id => {
-                console.log(id);
-                bots.push(bot);
             });
         }
         
@@ -124,6 +120,8 @@ function initUI() {
         BotPattern.addToggle("Smart Sneaky");
         BotPattern.addToggle("Diagonal Fill");
         BotPattern.addToggle("Use Player");
+        BotPattern.addToggle("Always Sleep");
+        BotPattern.addToggle("Old Paste");
     }
     {
         const AnimationBuilder = UI.addTab("Animation Builder");

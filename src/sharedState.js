@@ -1,2 +1,2 @@
-window.bots = []
-export default bots;
+export var bots = [];
+export var jobList = [];

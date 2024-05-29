@@ -301,8 +301,8 @@ class Client extends EventEmitter {
                 if (OJS.net.ws.readyState !== 1 || !OJS.net.isWebsocketConnected || OJS.player.rank === OJS.RANK.NONE) return false;
                 if (!OJS.net.bucket.canSpend(config.getValue("Minimum Quota"))) return false;
 
-                const lX = OJS.player.x,
-                    lY = OJS.player.y;
+                const oldX = OJS.player.x,
+                    oldY = OJS.player.y;
 
                 if(config.getValue("Smart Sneaky")) {
                     let distx = Math.trunc(x / Client.options.chunkSize) - Math.trunc(oldX / Client.options.chunkSize);
@@ -325,7 +325,7 @@ class Client extends EventEmitter {
                 dv.setUint8(10, color[2]);
                 OJS.player.color = color;
                 OJS.net.ws.send(dv.buffer);
-                if(config.getValue("Wolf Move")) OJS.world.move(lX, lY);
+                if(config.getValue("Wolf Move")) OJS.world.move(oldX, oldY);
                 return true;
             },
             setTool(id = 0) {
@@ -766,21 +766,24 @@ class Bucket {
 	}
 
     /**
-     * Calculates the time required to restore the bucket's allowance to its maximum rate.
-     * @returns {number} The time in seconds until the allowance is fully restored.
+     * Calculates the time required to restore the bucket's allowance to a specified amount or its maximum rate if no amount is specified.
+     * @param {number} [amount=this.rate] The amount of allowance to restore.
+     * @returns {number} The time in seconds until the specified allowance is restored.
      */
-	getTimeToRestore() {
-		if(this.allowance >= this.rate) return 0;
-        return (this.rate - this.allowance) / (this.rate / this.time);
-	}
+    getTimeToRestore(amount = this.rate) {
+        const targetAllowance = Math.min(this.rate, this.allowance + amount);
+        if (this.allowance >= targetAllowance) return 0;
+        return (targetAllowance - this.allowance) / (this.rate / this.time);
+    }
 
     /**
-     * Waits asynchronously until the bucket's allowance is fully restored.
+     * Waits asynchronously until the bucket's allowance is restored to a specified amount or fully if no amount is specified.
+     * @param {number} [amount=this.rate] The amount of allowance to restore.
      */
-	async waitUntilRestore() {
-        const restoreTime = this.getTimeToRestore() * 1000;
+    async waitUntilRestore(amount = this.rate) {
+        const restoreTime = this.getTimeToRestore(amount) * 1000;
         await new Promise(resolve => setTimeout(resolve, restoreTime));
-	}
+    }
 }
 
 Client.RANK = {

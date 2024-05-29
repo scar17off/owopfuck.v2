@@ -1,5 +1,5 @@
 import config from "./config.js";
-import bots from "./sharedState.js";
+import { bots, jobList } from "./sharedState.js";
 
 /**
  * Delays the execution of the next part of the code.
@@ -41,14 +41,13 @@ export function getLocalPlayer() {
 }
 
 /**
- * Asynchronously places a pixel on the world canvas using a bot.
+ * Places a pixel on the world canvas using a bot.
  * @param {number} x - The x-coordinate where the pixel will be placed.
  * @param {number} y - The y-coordinate where the pixel will be placed.
  * @param {Array} color - The RGB color array for the pixel.
  */
-export async function setPixel(x, y, color) {
-    const botIndex = getFree();
-    console.log(botIndex);
+export function setPixel(x, y, color, index) {
+    const botIndex = index || getFree();
     bots[botIndex].world.setPixel(x, y, color);
 }
 
@@ -59,4 +58,45 @@ export async function setPixel(x, y, color) {
  */
 export function getFlagName(name) {
     return name.trim().toLowerCase().replaceAll(' ', '-');
+}
+
+/**
+ * Asynchronously fills an area with a specified color and pattern using available bots.
+ * @param {number} x1 - The x-coordinate of the top-left corner of the area.
+ * @param {number} y1 - The y-coordinate of the top-left corner of the area.
+ * @param {number} x2 - The x-coordinate of the bottom-right corner of the area.
+ * @param {number} y2 - The y-coordinate of the bottom-right corner of the area.
+ * @param {Array} color - The RGB color array to fill the area with.
+ * @param {string} pattern - The name of the pattern to use for filling.
+ */
+export async function FillArea(x1, y1, x2, y2, color, pattern) {
+    if (getFree() === -1) return;
+    x2--; y2--;
+
+    for (const [x, y] of patterns[constants[pattern]](x1, y1, x2, y2)) {
+        let index = getFree();
+        if (index === -1) continue;
+
+        const pixel = OWOP.world.getPixel(x, y);
+        if (colorEqual(pixel, color)) continue;
+
+        await setPixel(x, y, color, index);
+
+        const alwaysSleep = config.getValue("Always Sleep");
+        const minimumQuota = config.getValue("Minimum Quota");
+        const oldPaste = config.getValue("Old Paste");
+        const instantPlace = config.getValue("Instant Place");
+
+        bots[index].net.bucket.update();
+
+        if(alwaysSleep || bots[index].net.bucket.allowance <= minimumQuota)
+            if(oldPaste) {
+                await sleep(0.1);
+            } else if(instantPlace) {
+                await bots[index].net.bucket.waitUntilRestore();
+            } else {
+                // TODO: Normal sleep to keep all jobs placing pixels
+                
+            }
+    }
 }

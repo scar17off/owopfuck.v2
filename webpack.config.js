@@ -16,7 +16,7 @@ const userScriptHeader = `// ==UserScript==
 `;
 
 module.exports = {
-    // mode: "development",
+    mode: "production",
     entry: path.resolve(__dirname, "src", "index.js"),
     output: {
         filename: "owopfuck.user.js",

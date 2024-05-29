@@ -77,7 +77,9 @@ const structure = {
     "Instant Place": false,
     "Smart Sneaky": false,
     "Diagonal Fill": false,
-    "Use Player": false
+    "Use Player": false,
+    "Old Paste": false,
+    "Always Sleep": false
 }
 
 for (const key in structure) {
