@@ -32,6 +32,10 @@ export default `.animbuilder-canvas-container {
 	border-radius: 3px;
 	color: rgb(230, 230, 230);
 }
+#window-aimware input[type="text"] {
+	margin: 0 auto;
+    width: 90%;
+}
 .aimware-dropdown > option {
 	background-color: rgb(24, 26, 28);
 	border: 2px solid #222324;
@@ -167,12 +171,12 @@ div.aimware-section {
 	border-radius: 5px;
 	height: 530px;
 	background-color: rgb(22, 24, 26);
-	margin: 0 10px 10px 0;
+	margin: 10px 5px 0px 5px;
+	padding: 5px;
 	flex: 1;
 }
 .aimware-tab {
 	display: flex;
-    padding: 10px;
 	overflow-y: auto;
 }
 #aimware-tablist {
@@ -334,14 +338,14 @@ html, body {
 .control-checkbox input:disabled ~ .control_indicator:after {
 	border-color: #111314;
 }
-table.aimware {
+#window-aimware table {
 	border-collapse: collapse;
 	color: rgb(75, 88, 213);
 	text-align: center;
 	width: -webkit-fill-available;
 	border: solid 1px rgb(55, 55, 55);
 }
-th.aimware, td.aimware {
+#window-aimware th, #window-aimware td {
 	font-size: 12.5px;
 	padding: 2px;
 	text-align: center;
@@ -352,7 +356,7 @@ th.aimware, td.aimware {
 	width: 110px;
 	border: solid 1px rgb(55, 55, 55);
 }
-tr.aimware:first-child {
+#window-aimware tr:first-child {
 	text-align: center;
 	border: solid 1px rgb(55, 55, 55);
 }`

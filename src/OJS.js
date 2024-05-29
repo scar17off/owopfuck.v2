@@ -149,23 +149,29 @@ const Chunks = new ChunkSystem();
 class Client extends EventEmitter {
     /**
      * @param {Object} options Options for connection
-     * @param {string} [options.ws=wss://ourworldofpixels.com] Websocket server address. ✔️
-     * @param {?number} options.id ID for logging. If not set, OWOP ID will be used. ✔️
-     * @param {string} [options.world=main] World name. ✔️
-     * @param {?boolean} options.noLog No logging. ✔️
-     * @param {?boolean} options.reconnect Reconnect if disconnected. ✔️
-     * @param {?string} options.adminlogin Admin login. ✔️
-     * @param {?string} options.modlogin Mod login. ✔️
-     * @param {?string} options.pass Pass for world. ✔️
-     * @param {?string} options.captchapass Captcha pass. ✔️
-     * @param {?string} options.teleport Teleport on 'teleport' opcode. ✔️
-     * @param {number} [options.reconnectTime=5000] Reconnect time (ms) after disconnect. ✔️
-     * @param {?boolean} options.unsafe Use methods that are supposed to be only for admin or moderator. ✔️
-     * @param {?boolean} options.simpleChunks Use original OWOP chunks instead of OJS. ✔️
+     * @param {string} [options.ws=wss://ourworldofpixels.com] Websocket server address
+     * @param {?number} options.id ID for logging. If not set, OWOP ID will be used
+     * @param {string} [options.world=main] World name
+     * @param {?boolean} options.noLog No logging
+     * @param {?boolean} options.reconnect Reconnect if disconnected
+     * @param {?string} options.adminlogin Admin login
+     * @param {?string} options.modlogin Mod login
+     * @param {?string} options.pass Pass for world
+     * @param {?string} options.captchapass Captcha pass
+     * @param {?string} options.captchaSiteKey Captcha site key
+     * @param {?string} options.teleport Teleport on 'teleport' opcode
+     * @param {number} [options.reconnectTime=5000] Reconnect time (ms) after disconnect
+     * @param {?boolean} options.unsafe Use methods that are supposed to be only for admin or moderator
+     * @param {?boolean} options.simpleChunks Use original OWOP chunks instead of OJS
+     * @param {WebSocket} options.ws WebSocket connection instance
+     * @param {?boolean} options.localplayer LocalPlayer WebSocket
      */
     constructor(options = {}) {
         super();
+        
         if(!options.reconnectTime) options.reconnectTime = 5000;
+        if(!options.captchaSiteKey) options.captchaSiteKey = "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI";
+
         const OJS = this;
         this.clientOptions = options;
         this.RANK = {
@@ -381,6 +387,44 @@ class Client extends EventEmitter {
                 return Chunks.getPixel(x, y);
             }
         }
+        OJS.captcha = {
+            usedKeys: [],
+            login(key) {
+                if(!OJS.net.ws ||
+                    OJS.net.ws.readyState !== 1) return false;
+                if(OJS.captcha.usedKeys.includes(key)) {
+                    return false
+                } else if(!key.startsWith(OJS.options.misc.tokenVerification)) {
+                    OJS.captcha.usedKeys.push(key);
+                }
+                OJS.net.ws.send(OJS.options.misc.tokenVerification + key);
+                OJS.captcha.usedKeys.push(key);
+                return true;
+            },
+            renderCaptcha() {
+                return new Promise(resolve => {
+                    OWOP.windowSys.addWindow(new OWOP.windowSys.class.window(`Verification Needed: ${new Date().toUTCString()}`, {
+                        closeable: true,
+                        moveable: true,
+                        centered: true
+                    }, win => {
+                        win.container.parentNode.style["z-index"] = "101";
+                        
+                        grecaptcha.render(win.addObj(OWOP.util.mkHTML('div', {})), {
+                            theme: 'dark',
+                            sitekey: OJS.clientOptions.captchaSiteKey,
+                            callback: token => {
+                                win.close();
+                                resolve(token);
+                            }
+                        });
+                    }));
+                });
+            },
+            async renderAndLogin() {
+                OJS.captcha.login(await OJS.captcha.renderCaptcha());
+            }
+        }
         OJS.player = {
             x: 0,
             y: 0,
@@ -503,13 +547,14 @@ class Client extends EventEmitter {
                         }
                     case OJS.options.opcode.captcha:
                         {
-                            switch (data.getUint8(1)) {
+                            const id = data.getUint8(1);
+                            switch(id) {
                                 case OJS.options.captchaState.CA_WAITING:
                                     OJS.util.log("CaptchaState: WAITING (0)", "color: #ffff00");
                                     if(options.captchapass) {
                                         OJS.net.ws.send(OJS.options.misc.tokenVerification + "LETMEINPLZ" + options.captchapass);
                                         OJS.util.log("Used captchapass.", "color: #00ff00");
-                                    } else if(options.renderCaptcha) this.net.ws.send(OWOP.options.serverAddress[0].proto.misc.tokenVerification + (await renderCaptcha()));
+                                    } else if(options.renderCaptcha) this.net.ws.send(OWOP.options.serverAddress[0].proto.misc.tokenVerification + (await this.captcha.renderCaptcha()));
                                     break;
                                 case OJS.options.captchaState.CA_VERIFYING:
                                     OJS.util.log("CaptchaState: VERIFYING (1)", "color: #ffff00");
@@ -530,7 +575,11 @@ class Client extends EventEmitter {
                                     OJS.emit("destroy");
                                     break;
                             }
-                            OJS.emit("captcha", data.getUint8(1));
+
+                            OJS.emit("captcha", id);
+                            (async () => {
+                                if(id === 0) await OJS.captcha.renderAndLogin(true);
+                            })();
                             break;
                         }
                     case OJS.options.opcode.setPQuota:
@@ -574,7 +623,7 @@ class Client extends EventEmitter {
         }
         void
         function makeSocket() {
-            let ws = new WebSocket(options.ws);
+            let ws = options.ws;
             ws.binaryType = "arraybuffer";
             ws.onopen = () => {
                 OJS.util.log("WebSocket connected!", "color: #00ff00");

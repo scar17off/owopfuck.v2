@@ -68,12 +68,16 @@ const config = new UltimateConfig("OWOPFUCK-V2");
 export default config;
 
 const structure = {
-    "Instant Place": false,
-    "Use Player": true,
     "MenuKey": "F2",
     "AutoReconnect": false,
     "Bot Nickname": '',
-    "Auto Login": false
+    "Auto Login": false,
+    "Bot Count": 1,
+    "Wolf Move": false,
+    "Instant Place": false,
+    "Smart Sneaky": false,
+    "Diagonal Fill": false,
+    "Use Player": false
 }
 
 for (const key in structure) {
