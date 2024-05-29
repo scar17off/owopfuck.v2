@@ -79,7 +79,10 @@ function initUI() {
                 bots.splice(bots.indexOf(bot), 1);
             });
 
-            bots.push(bot);
+            bot.on("id", id => {
+                console.log(id);
+                bots.push(bot);
+            });
         }
         
         BotMain.addButton("Connect", () => {
@@ -87,7 +90,7 @@ function initUI() {
         });
 
         BotMain.addButton("Disconnect", () => {
-            for(let i in bots) bots[i].net.ws.close();
+            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].net.ws.close();
         });
 
         BotMain.addLabel("Chat");
@@ -143,7 +146,7 @@ function initUI() {
         const client = getLocalPlayer();
         
         client.on("connect", ID => {
-            if(bots.filter(bot => bot.player.id == ID).length > 0) {
+            if(bots.some(bot => bot.player.id == ID)) {
                 botsTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
                 return;
             }
@@ -167,9 +170,9 @@ function initUI() {
         });
 
         function createColorDiv(rgb) {
-            const div = document.createElement('div');
-            div.style.width = '20px';
-            div.style.height = '20px';
+            const div = document.createElement("div");
+            div.style.width = "20px";
+            div.style.height = "20px";
             div.style.backgroundColor = `rgb(${rgb})`;
             div.title = rgb;
 

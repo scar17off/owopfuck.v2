@@ -27,7 +27,7 @@ export default function initTools() {
         });
     }));
 
-    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Fill", OWOP.cursors.fill, OWOP.fx.player.NONE, OWOP.RANK.USER, function (tool) {
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Fill", OWOP.cursors.fill, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function(tool) {
         let stopFlag = false;
 
         async function floodFill(x, y, targetColor, fillColor) {
@@ -35,14 +35,14 @@ export default function initTools() {
             const pixelQueue = [[x, y]];
             const visited = new Set();
 
-            while (pixelQueue.length > 0) {
+            while(pixelQueue.length > 0) {
                 if(stopFlag) return;
                 const [x, y] = pixelQueue.shift();
                 if(visited.has(`${x},${y}`)) continue;
                 visited.add(`${x},${y}`);
                 const currentColor = await OWOP.world.getPixel(x, y);
                 if(!currentColor) return;
-                if(currentColor[0] !== targetColor[0] || currentColor[1] !== targetColor[1] || currentColor[2] !== targetColor[2]) continue;
+				if(currentColor[0] !== targetColor[0] || currentColor[1] !== targetColor[1] || currentColor[2] !== targetColor[2]) continue;
                 await setPixel(x, y, fillColor);
                 pixelQueue.push([x + 1, y]);
                 pixelQueue.push([x - 1, y]);

@@ -1,2 +1,2 @@
 window.bots = []
-export default window.bots;
+export default bots;

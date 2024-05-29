@@ -1,4 +1,6 @@
 import EventEmitter from "./EventEmitter.js";
+import config from "./config.js";
+import { colorEqual } from "./utils.js";
 
 /**
  * Logs an error message with red color formatting in the console.
@@ -164,13 +166,14 @@ class Client extends EventEmitter {
      * @param {?boolean} options.unsafe Use methods that are supposed to be only for admin or moderator
      * @param {?boolean} options.simpleChunks Use original OWOP chunks instead of OJS
      * @param {WebSocket} options.ws WebSocket connection instance
-     * @param {?boolean} options.localplayer LocalPlayer WebSocket
+     * @param {?boolean} [options.localplayer=false] LocalPlayer WebSocket
      */
     constructor(options = {}) {
         super();
         
         if(!options.reconnectTime) options.reconnectTime = 5000;
         if(!options.captchaSiteKey) options.captchaSiteKey = "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI";
+        if(!options.localplayer) options.localplayer = false;
 
         const OJS = this;
         this.clientOptions = options;
@@ -294,12 +297,26 @@ class Client extends EventEmitter {
                 OJS.net.ws.send(dv.buffer);
                 return true;
             },
-            setPixel(x = OJS.player.x, y = OJS.player.y, color = OJS.player.color, sneaky, move = true) {
-                if(OJS.net.ws.readyState !== 1 || !OJS.net.isWebsocketConnected || OJS.player.rank === OJS.RANK.NONE) return false;
-                if(!OJS.net.bucket.canSpend(1)) return false;
+            setPixel(x = OJS.player.x, y = OJS.player.y, color = OJS.player.color) {
+                if (OJS.net.ws.readyState !== 1 || !OJS.net.isWebsocketConnected || OJS.player.rank === OJS.RANK.NONE) return false;
+                if (!OJS.net.bucket.canSpend(config.getValue("Minimum Quota"))) return false;
+
                 const lX = OJS.player.x,
                     lY = OJS.player.y;
-                if(move) OJS.world.move(x, y);
+
+                if(config.getValue("Smart Sneaky")) {
+                    let distx = Math.trunc(x / Client.options.chunkSize) - Math.trunc(oldX / Client.options.chunkSize);
+                    distx *= distx;
+                    let disty = Math.trunc(y / Client.options.chunkSize) - Math.trunc(oldY / Client.options.chunkSize);
+                    disty *= disty;
+
+                    let dist = Math.sqrt(distx + disty);
+
+                    if(dist >= 3) OJS.world.move(x, y);
+                } else {
+                    OJS.world.move(x, y);
+                }
+
                 const dv = new DataView(new ArrayBuffer(11));
                 dv.setInt32(0, x, true);
                 dv.setInt32(4, y, true);
@@ -308,7 +325,7 @@ class Client extends EventEmitter {
                 dv.setUint8(10, color[2]);
                 OJS.player.color = color;
                 OJS.net.ws.send(dv.buffer);
-                if(sneaky) OJS.world.move(lX, lY);
+                if(config.getValue("Wolf Move")) OJS.world.move(lX, lY);
                 return true;
             },
             setTool(id = 0) {
@@ -449,7 +466,6 @@ class Client extends EventEmitter {
                 switch (opcode) {
                     case OJS.options.opcode.setId:
                         {
-                            OJS.emit("id", data.getUint32(1, true));
                             OJS.player.id = data.getUint32(1, true);
                             OJS.net.isWorldConnected = true;
                             if(typeof OJS.player.rank !== "number") OJS.player.rank = OJS.RANK.NONE;
@@ -458,6 +474,7 @@ class Client extends EventEmitter {
                             if(options.modlogin) OJS.chat.send("/modlogin " + options.modlogin); // Not working at the moment
                             if(options.pass) OJS.chat.send("/pass " + options.pass);
                             OJS.emit("join", OJS.world.name);
+                            OJS.emit("id", data.getUint32(1, true));
                             break;
                         }
                     case OJS.options.opcode.worldUpdate:
@@ -586,6 +603,7 @@ class Client extends EventEmitter {
                         {
                             let rate = data.getUint16(1, true);
                             let per = data.getUint16(3, true);
+                            if(rate === 0 && per === 0) return;
                             OJS.net.bucket = new Bucket(rate, per);
                             OJS.emit("pquota", rate, per);
                             OJS.util.log(`New PQuota: ${rate}x${per}`);
