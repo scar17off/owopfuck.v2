@@ -97,7 +97,7 @@ function initUI() {
 
         BotMain.addInput('!Message', "Message");
         BotMain.addButton("Send", () => {
-            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].chat.send(config.getValue("Chat"));
+            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].chat.send(config.getValue("Message"));
         });
 
         /* Patterns */
