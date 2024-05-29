@@ -37,9 +37,7 @@ function initUI() {
             else OWOP.removeListener(events.net.disconnected, onDisconnect);
         });
 
-        ClientMain.addButton("Disconnect", () => {
-            socket.close();
-        });
+        ClientMain.addButton("Disconnect", () => getLocalPlayer().world.destroy());
 
         /* Visuals */
         const ClientVisuals = Client.addSection("Visuals");
@@ -54,22 +52,10 @@ function initUI() {
         /* Main */
         const BotMain = Bot.addSection("Main");
 
-        BotMain.addInput("Bot Nickname", "Nickname", value => {
-            
-        });
-
-        BotMain.addToggle("Bot AutoReconnect", value => {
-
-        });
-
-        BotMain.addToggle("AutoLogin", "AutoLogin", value => {
-
-        });
-
-        BotMain.addToggle("AutoLogin", value => {
-
-        });
-
+        BotMain.addInput("Bot Nickname", "Nickname");
+        BotMain.addToggle("Bot AutoReconnect");
+        BotMain.addToggle("AutoLogin");
+        BotMain.addToggle("AutoLogin");
         BotMain.addRange("Bot Count", 1, 10, 1);
 
         function connectBot() {
@@ -105,12 +91,10 @@ function initUI() {
         });
 
         BotMain.addLabel("Chat");
-        BotMain.addInput('!Message', "Message", value => {
-            for(let i in bots) bots[i].chat.send(value);
-        });
 
+        BotMain.addInput('!Message', "Message");
         BotMain.addButton("Send", () => {
-            for(let i in bots) bots[i].chat.send(config.getValue("Chat"));
+            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].chat.send(config.getValue("Chat"));
         });
 
         /* Patterns */
@@ -188,6 +172,7 @@ function initUI() {
             div.style.height = '20px';
             div.style.backgroundColor = `rgb(${rgb})`;
             div.title = rgb;
+
             return div.outerHTML;
         }
     }
@@ -197,7 +182,7 @@ function onLoad() {
     initTools();
     initUI();
 
-    OWOP.chat.local("owopfuck.v2 loaded! Use F2 to open the menu.");
+    OWOP.chat.local(`owopfuck.v2 loaded! Use ${config.getValue("MenuKey")} to open the menu.`);
 }
 
 window.onload = () => OWOP.on(events.net.world.join, onLoad);

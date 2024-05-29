@@ -348,13 +348,14 @@ html, body {
 #window-aimware th, #window-aimware td {
 	font-size: 12.5px;
 	padding: 2px;
-	text-align: center;
 	border-color: rgb(200, 200, 200);
 	border-width: 1px;
 	border-style: double;
 	border-right-style: none;
-	width: 110px;
 	border: solid 1px rgb(55, 55, 55);
+}
+#window-aimware th:last-child {
+    width: 20px;
 }
 #window-aimware tr:first-child {
 	text-align: center;

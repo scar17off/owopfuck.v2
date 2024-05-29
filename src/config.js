@@ -68,7 +68,7 @@ const config = new UltimateConfig("OWOPFUCK-V2");
 export default config;
 
 const structure = {
-    "MenuKey": "F2",
+    "MenuKey": "F4",
     "AutoReconnect": false,
     "Bot Nickname": '',
     "Auto Login": false,
