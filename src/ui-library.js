@@ -1,5 +1,6 @@
 import mainCSS from "./main.css.js";
 import { getFlagName } from "./utils.js";
+import config from "./config.js";
 
 const style = document.createElement("style");
 style.textContent = mainCSS;
@@ -96,7 +97,8 @@ export default class Aimware {
                         button.onclick = callback;
                         section.appendChild(button);
                     },
-                    addToggle: (name, value, callback) => {
+                    addToggle: (name, callback) => {
+                        const value = config.getValue(name);
                         const controlGroup = document.createElement("div");
                         controlGroup.className = "control-group";
 
@@ -109,7 +111,10 @@ export default class Aimware {
                         const toggle = document.createElement("input");
                         toggle.type = "checkbox";
                         toggle.checked = value;
-                        toggle.onchange = e => callback(e.target.checked);
+                        toggle.onchange = e => {
+                            config.setValue(e.target.checked, name);
+                            callback(e.target.checked);
+                        }
 
                         const indicator = document.createElement("div");
                         indicator.className = "control_indicator";
@@ -119,13 +124,76 @@ export default class Aimware {
                         label.appendChild(indicator);
                         controlGroup.appendChild(label);
                         section.appendChild(controlGroup);
+                    },
+                    addInput: (name, placeholder, callback) => {
+                        const value = config.getValue(name);
+                        const inputWrapper = document.createElement("div");
+                        inputWrapper.style.display = "flex";
+                        inputWrapper.style.flexDirection = "column";
+
+                        const label = document.createElement("label");
+                        label.textContent = name;
+                        label.style.marginBottom = "5px";
+                        inputWrapper.appendChild(label);
+
+                        const input = document.createElement("input");
+                        input.type = "text";
+                        input.value = value;
+                        input.placeholder = placeholder;
+                        input.onchange = e => {
+                            config.setValue(e.target.value, name);
+                            callback(e.target.value);
+                        }
+                        inputWrapper.appendChild(input);
+
+                        section.appendChild(inputWrapper);
+                    },
+                    addRange: (name, min, max, callback = () => {}) => {
+                        const value = config.getValue(name);
+                        const rangeWrapper = document.createElement("div");
+
+                        const label = document.createElement("label");
+                        label.textContent = name;
+
+                        const rangeInput = document.createElement("input");
+                        rangeInput.className = "aimware-range2";
+                        rangeInput.type = "range";
+                        rangeInput.min = min;
+                        rangeInput.max = max;
+                        rangeInput.value = value;
+                        rangeInput.name = name.toLowerCase().replace(/\s/g, '');
+                        rangeInput.oninput = e => {
+                            numberInput.value = e.target.value;
+                            config.setValue(e.target.value, name);
+                            callback(e.target.value);
+                        }
+
+                        const numberInput = document.createElement("input");
+                        numberInput.id = `aimware-${name.toLowerCase().replace(/\s/g, '')}-input`;
+                        numberInput.className = "aimware-rangetext";
+                        numberInput.type = "number";
+                        numberInput.style.marginLeft = "0px";
+                        numberInput.min = min;
+                        numberInput.max = max;
+                        numberInput.value = value;
+                        numberInput.oninput = e => {
+                            rangeInput.value = e.target.value;
+                            config.setValue(e.target.value, name);
+                            callback(e.target.value);
+                        }
+
+                        rangeWrapper.appendChild(label);
+                        rangeWrapper.appendChild(rangeInput);
+                        rangeWrapper.appendChild(numberInput);
+
+                        section.appendChild(rangeWrapper);
                     }
                 }
             }
         }
     }
     switchVisibility(value) {
-        OWOP.windowSys.windows["owopfuck.v2"].container.parentNode.hidden = !value;
+        OWOP.windowSys.windows[this.title].container.parentNode.hidden = !value;
     }
 }
 

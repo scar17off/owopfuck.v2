@@ -25,6 +25,13 @@ export default `.animbuilder-canvas-container {
 	color: rgb(230, 230, 230);
 	font-size: 16px;
 }
+#window-aimware input {
+	background-color: transparent;
+	border: 2px solid #222324;
+	margin-left: 10px;
+	border-radius: 3px;
+	color: rgb(230, 230, 230);
+}
 .aimware-dropdown > option {
 	background-color: rgb(24, 26, 28);
 	border: 2px solid #222324;
@@ -122,13 +129,6 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
 	border-radius: 15px;
 	height: 16px;
 	width: 16px;
-}
-.aimware-text {
-	background-color: transparent;
-	border: 2px solid #222324;
-	margin-left: 10px;
-	border-radius: 3px;
-	color: rgb(230, 230, 230);
 }
 .aimware-rangetext {
 	/* -moz-appearance: textfield; */
@@ -233,9 +233,9 @@ html, body {
 	margin: 0;
 }
 .aimware-button {
-	border: 2px solid #222324;
+	border: 2px solid #3e4043;
 	border-radius: 3px;
-	background: rgba(200, 200, 200, 0.01);
+	background-color: rgba(127, 127, 127, 0.1);
 	width: 90%;
 	height: 25px;
 	color: rgb(150, 150, 150);
@@ -276,7 +276,7 @@ html, body {
 .control {
     display: block;
     position: relative;
-    padding: 5px 0px 10px 25px;
+    padding: 5px 0px 5px 25px;
     cursor: pointer;
     font-size: 16px;
     margin-left: 10px;
@@ -293,7 +293,7 @@ html, body {
 	height: 18px;
 	width: 18px;
 	background: transparent;
-	border: 1px solid #222324;
+	border: 2px solid #3e4043;
 	border-radius: 3px;
 }
 .control:hover input ~ .control_indicator,

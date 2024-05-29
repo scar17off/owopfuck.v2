@@ -18,6 +18,18 @@ function colorEqual(color1, color2) {
     return JSON.stringify(color1) === JSON.stringify(color2);
 }
 
+var last = 0;
+/**
+ * Returns the index of the next bot.
+ * @returns {number} The index of the next bot.
+ */
+export function getFree() {
+    let b = bots.filter(i => i.net.ws.readyState === 1 && i.net.isWorldConnected);
+    if(b.length === 0) return -1;
+    if(last >= b.length) last = 0;
+    return last++;
+}
+
 /**
  * Sets a pixel on the OWOP world if conditions are met.
  * @param {number} x - The x-coordinate of the pixel.
@@ -28,8 +40,19 @@ function colorEqual(color1, color2) {
 export async function setPixel(x, y, color = [0, 0, 0]) {
     if(bots.length === 0 && !config.getValue("UsePlayer")) return false;
     if(colorEqual(color, OWOP.world.getPixel(x, y))) return false;
+    if(getFree() === -1) return;
 
     OWOP.world.setPixel(x, y, color);
+
+    const id = getFree();
+
+    const bot = bots[id];
+    if (bot.net.bucket.canSpend(1)) {
+        bot.world.setPixel(x, y, color);
+    } else {
+        await bot.net.bucket.waitUntilRestore();
+        bot.world.setPixel(x, y, color);
+    }
 
     return true;
 }

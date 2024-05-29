@@ -1,3 +1,5 @@
+import EventEmitter from "./EventEmitter.js";
+
 /**
  * Logs an error message with red color formatting in the console.
  * @param {string} m - The message to log as an error.
@@ -144,7 +146,7 @@ class ChunkSystem {
     }
 }
 const Chunks = new ChunkSystem();
-class Client {
+class Client extends EventEmitter {
     /**
      * @param {Object} options Options for connection
      * @param {string} [options.ws=wss://ourworldofpixels.com] Websocket server address. ✔️
@@ -162,6 +164,7 @@ class Client {
      * @param {?boolean} options.simpleChunks Use original OWOP chunks instead of OJS. ✔️
      */
     constructor(options = {}) {
+        super();
         if(!options.reconnectTime) options.reconnectTime = 5000;
         const OJS = this;
         this.clientOptions = options;
@@ -711,6 +714,64 @@ class Bucket {
         const restoreTime = this.getTimeToRestore() * 1000;
         await new Promise(resolve => setTimeout(resolve, restoreTime));
 	}
+}
+
+Client.RANK = {
+    ADMIN: 3,
+    MODERATOR: 2,
+    USER: 1,
+    NONE: 0
+}
+
+Client.options = {
+    chunkSize: 16,
+    maxChatBuffer: 256,
+    maxMessageLength: {
+        0: 128,
+        1: 128,
+        2: 512,
+        3: 16384
+    },
+    maxWorldNameLength: 24,
+    worldBorder: 0xFFFFFF,
+    opcode: {
+        setId: 0,
+        worldUpdate: 1,
+        chunkLoad: 2,
+        teleport: 3,
+        setRank: 4,
+        captcha: 5,
+        setPQuota: 6,
+        chunkProtected: 7
+    },
+    captchaState: {
+        CA_WAITING: 0,
+        CA_VERIFYING: 1,
+        CA_VERIFIED: 2,
+        CA_OK: 3,
+        CA_INVALID: 4
+    },
+    captchaStateNames: {
+        0: "WAITING",
+        1: "VERIFYING",
+        2: "VERIFIED",
+        3: "OK",
+        4: "INVALID"
+    }
+}
+
+window.onload = () => {
+    if (window.document === undefined) {
+        Client.options.misc = {
+            chatVerification: String.fromCharCode(10),
+            tokenVerification: "CaptchA",
+            worldVerification: 25565
+        }
+    } else Client.options.misc = {
+        chatVerification: OWOP.options.serverAddress[0].proto.misc.chatVerification,
+        tokenVerification: OWOP.options.serverAddress[0].proto.misc.tokenVerification,
+        worldVerification: OWOP.options.serverAddress[0].proto.misc.worldVerification
+    }
 }
 
 /**
