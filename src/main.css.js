@@ -18,21 +18,21 @@ export default `.animbuilder-canvas-container {
 	width: 48%;
 	height: 53vh;
 }
-#window-aimware {
+#aimware-window {
 	background-color: rgb(17, 19, 20);
 }
-#window-aimware label {
+#aimware-window label {
 	color: rgb(230, 230, 230);
 	font-size: 16px;
 }
-#window-aimware input {
+#aimware-window input {
 	background-color: transparent;
 	border: 2px solid #222324;
 	margin-left: 10px;
 	border-radius: 3px;
 	color: rgb(230, 230, 230);
 }
-#window-aimware input[type="text"] {
+#aimware-window input[type="text"] {
 	margin: 0 auto;
     width: 90%;
 }
@@ -338,14 +338,14 @@ html, body {
 .control-checkbox input:disabled ~ .control_indicator:after {
 	border-color: #111314;
 }
-#window-aimware table {
+#aimware-window table {
 	border-collapse: collapse;
 	color: rgb(75, 88, 213);
 	text-align: center;
 	width: -webkit-fill-available;
 	border: solid 1px rgb(55, 55, 55);
 }
-#window-aimware th, #window-aimware td {
+#aimware-window th, #aimware-window td {
 	font-size: 12.5px;
 	padding: 2px;
 	border-color: rgb(200, 200, 200);
@@ -354,10 +354,10 @@ html, body {
 	border-right-style: none;
 	border: solid 1px rgb(55, 55, 55);
 }
-#window-aimware th:last-child {
+#aimware-window th:last-child {
     width: 20px;
 }
-#window-aimware tr:first-child {
+#aimware-window tr:first-child {
 	text-align: center;
 	border: solid 1px rgb(55, 55, 55);
 }`

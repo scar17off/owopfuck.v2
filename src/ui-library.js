@@ -17,7 +17,7 @@ export default class Aimware {
 			closeable: false
 		}, function (win) {
             const container = win.container;
-            container.id = "window-aimware";
+            container.id = "aimware-window";
             container.style.cssText = `
                 overflow-y: auto;
                 -o-border-image: url(/img/window_in.png) 5 repeat;
@@ -41,14 +41,15 @@ export default class Aimware {
             `;
 
             container.innerHTML = `
-<div class="aimware-topbar" style="border-bottom: solid 2px #4a58c8;">
-	<div id="aimware-title">
-		<label style="font-size: 20px; color: rgb(240, 240, 240); font-weight: 500px; margin-left: 20px; line-height: 40px;">owopfuck</label>
-		<label style="font-size: 20px; color: rgb(97, 109, 212); font-weight: 500px; line-height: 40px; margin-left: -10px;">.v2</label>
-	</div>
-	<div id="aimware-tablist"></div>
-</div>
-<div id="aimware-content"></div>`;
+                <div class="aimware-topbar" style="border-bottom: solid 2px #4a58c8;">
+                    <div id="aimware-title">
+                        <label style="font-size: 20px; color: rgb(240, 240, 240); font-weight: 500px; margin-left: 20px; line-height: 40px;">owopfuck</label>
+                        <label style="font-size: 20px; color: rgb(97, 109, 212); font-weight: 500px; line-height: 40px; margin-left: -10px;">.v2</label>
+                    </div>
+                    <div id="aimware-tablist"></div>
+                </div>
+                <div id="aimware-content"></div>
+            `;
         }).move(Aimware.options.x, Aimware.options.y));
 
         if(options.keybind) {

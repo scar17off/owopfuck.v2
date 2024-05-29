@@ -185,4 +185,6 @@ function onLoad() {
     OWOP.chat.local(`owopfuck.v2 loaded! Use ${config.getValue("MenuKey")} to open the menu.`);
 }
 
-window.onload = () => OWOP.on(events.net.world.join, onLoad);
+window.onload = () => {
+    OWOP.once(events.net.world.join, onLoad);
+}
