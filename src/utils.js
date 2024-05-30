@@ -24,7 +24,8 @@ let last = 0;
  * @returns {number} The index of the next bot.
  */
 export function getFree() {
-    let b = bots.filter(i => i.net.isWebsocketConnected && i.net.isWorldConnected && !i.clientOptions.localplayer);
+    let usePlayer = config.getValue("Use Player");
+    let b = bots.filter(i => i.net.isWebsocketConnected && i.net.isWorldConnected && (!i.clientOptions.localplayer || usePlayer));
     if(b.length === 0) return -1;
     if(last >= b.length) last = 0;
     let index = bots.indexOf(b[last]);
@@ -46,9 +47,36 @@ export function getLocalPlayer() {
  * @param {number} y - The y-coordinate where the pixel will be placed.
  * @param {Array} color - The RGB color array for the pixel.
  */
-export function setPixel(x, y, color, index) {
-    const botIndex = index || getFree();
-    bots[botIndex].world.setPixel(x, y, color);
+export async function setPixel(x, y, color, index) {
+    const botIndex = index !== undefined ? index : getFree();
+    if (botIndex === -1) return;
+
+    const alwaysSleep = config.getValue("Always Sleep");
+    const minimumQuota = config.getValue("Minimum Quota");
+    const instantPlace = config.getValue("Instant Place");
+
+    bots[botIndex].net.bucket.update();
+
+    if (alwaysSleep || bots[botIndex].net.bucket.allowance <= minimumQuota) {
+        if (instantPlace) {
+            await bots[botIndex].net.bucket.waitUntilRestore();
+            bots[botIndex].world.setPixel(x, y, color);
+        } else {
+            while (true) {
+                await bots[botIndex].net.bucket.waitUntilRestore(minimumQuota);
+                bots[botIndex].net.bucket.update();
+
+                if (bots[botIndex].net.bucket.allowance >= minimumQuota) {
+                    bots[botIndex].world.setPixel(x, y, color);
+                    break;
+                } else {
+                    await bots[botIndex].net.bucket.waitUntilRestore(minimumQuota);
+                }
+            }
+        }
+    } else {
+        bots[botIndex].world.setPixel(x, y, color);
+    }
 }
 
 /**
@@ -79,32 +107,6 @@ export async function FillArea(x1, y1, x2, y2, color, pattern) {
 
         const pixel = OWOP.world.getPixel(x, y);
         if (colorEqual(pixel, color)) continue;
-
-        const alwaysSleep = config.getValue("Always Sleep");
-        const minimumQuota = config.getValue("Minimum Quota");
-        const instantPlace = config.getValue("Instant Place");
-
-        bots[index].net.bucket.update();
-
-        if(alwaysSleep || bots[index].net.bucket.allowance <= minimumQuota) {
-            if(instantPlace) {
-                await bots[index].net.bucket.waitUntilRestore();
-                await setPixel(x, y, color, index);
-            } else {
-                while (true) {
-                    await bots[index].net.bucket.waitUntilRestore(1);
-                    bots[index].net.bucket.update();
-
-                    if (bots[index].net.bucket.allowance >= minimumQuota) {
-                        await setPixel(x, y, color, index);
-                        break;
-                    } else {
-                        await bots[index].net.bucket.waitUntilRestore(1);
-                    }
-                }
-            }
-        } else {
-            await setPixel(x, y, color, index);
-        }
+        await setPixel(x, y, color, index)
     }
 }
