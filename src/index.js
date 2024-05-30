@@ -121,7 +121,6 @@ function initUI() {
         BotPattern.addToggle("Diagonal Fill");
         BotPattern.addToggle("Use Player");
         BotPattern.addToggle("Always Sleep");
-        BotPattern.addToggle("Old Paste");
     }
     {
         const AnimationBuilder = UI.addTab("Animation Builder");

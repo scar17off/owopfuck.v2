@@ -78,7 +78,6 @@ const structure = {
     "Smart Sneaky": false,
     "Diagonal Fill": false,
     "Use Player": false,
-    "Old Paste": false,
     "Always Sleep": false
 }
 

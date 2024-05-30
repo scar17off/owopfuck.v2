@@ -80,23 +80,31 @@ export async function FillArea(x1, y1, x2, y2, color, pattern) {
         const pixel = OWOP.world.getPixel(x, y);
         if (colorEqual(pixel, color)) continue;
 
-        await setPixel(x, y, color, index);
-
         const alwaysSleep = config.getValue("Always Sleep");
         const minimumQuota = config.getValue("Minimum Quota");
-        const oldPaste = config.getValue("Old Paste");
         const instantPlace = config.getValue("Instant Place");
 
         bots[index].net.bucket.update();
 
-        if(alwaysSleep || bots[index].net.bucket.allowance <= minimumQuota)
-            if(oldPaste) {
-                await sleep(0.1);
-            } else if(instantPlace) {
+        if(alwaysSleep || bots[index].net.bucket.allowance <= minimumQuota) {
+            if(instantPlace) {
                 await bots[index].net.bucket.waitUntilRestore();
+                await setPixel(x, y, color, index);
             } else {
-                // TODO: Normal sleep to keep all jobs placing pixels
-                
+                while (true) {
+                    await bots[index].net.bucket.waitUntilRestore(1);
+                    bots[index].net.bucket.update();
+
+                    if (bots[index].net.bucket.allowance >= minimumQuota) {
+                        await setPixel(x, y, color, index);
+                        break;
+                    } else {
+                        await bots[index].net.bucket.waitUntilRestore(1);
+                    }
+                }
             }
+        } else {
+            await setPixel(x, y, color, index);
+        }
     }
 }
