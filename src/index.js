@@ -77,9 +77,7 @@ function initUI() {
                 simpleChunks: false
             });
             bot.on("id", () => bots.push(bot));
-            bot.on("close", () => {
-                bots.splice(bots.indexOf(bot), 1);
-            });
+            bot.on("close", () => bots.splice(bots.indexOf(bot), 1));
         }
         
         BotMain.addButton("Connect", () => {
@@ -199,9 +197,7 @@ function initUI() {
                             zombie: item.id
                         });
                         bot.on("id", () => bots.push(bot));
-                        bot.on("close", () => {
-                            bots.splice(bots.indexOf(bot), 1);
-                        });
+                        bot.on("close", () => bots.splice(bots.indexOf(bot), 1));
                     }
                 });
             });
@@ -222,15 +218,17 @@ function initUI() {
         const client = getLocalPlayer();
         
         client.on("connect", ID => {
-            if(bots.some(bot => bot.player.id == ID)) {
-                botsTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
-                return;
-            }
-            playersTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
+            setTimeout(() => {
+                if(bots.some(bot => bot.player.id == ID)) {
+                    botsTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
+                    return;
+                }
+                playersTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
+            }, 500);
         });
 
         client.on("update", player => {
-            if(bots.filter(bot => bot.player.id == player.id).length > 0) {
+            if(bots.some(bot => bot.player.id == player.id)) {
                 botsTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, RGB: createColorDiv(player.rgb || "0,0,0") });
                 return;
             }
@@ -238,7 +236,7 @@ function initUI() {
         });
 
         client.on("disconnect", ID => {
-            if(bots.filter(bot => bot.player.id == ID).length > 0) {
+            if(bots.some(bot => bot.player.id == ID)) {
                 botsTable.removeRow({ ID });
                 return;
             }

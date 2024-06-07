@@ -652,6 +652,7 @@ class Client extends EventEmitter {
 
             const onMessage = msg => {
                 OJS.emit("rawMessage", msg.data || msg);
+
                 if (typeof msg.data === "string" || typeof msg === "string") {
                     OJS.net.messageHandler(msg.data || msg);
                 } else if (typeof msg.data === "object" || typeof msg === "object") {
@@ -664,6 +665,7 @@ class Client extends EventEmitter {
                 OJS.util.log("WebSocket disconnected!", "color: #ff0000");
                 OJS.net.isWorldConnected = false;
                 OJS.net.isWebsocketConnected = false;
+                
                 if (options.reconnect && !OJS.net.destroyed) {
                     setTimeout(makeSocket, options.reconnectTime);
                 }
@@ -676,14 +678,12 @@ class Client extends EventEmitter {
             }
 
             if (!options.zombie) {
-                console.log("not zombie");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = onOpen;
                 ws.onmessage = onMessage;
                 ws.onclose = onClose;
                 ws.onerror = onError;
             } else {
-                console.log("zombie");
                 ws.on("open", onOpen);
                 ws.on("message", onMessage);
                 ws.on("close", onClose);
