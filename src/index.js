@@ -156,10 +156,10 @@ function initUI() {
 
             list.forEach(item => {
                 const existingRow = zombiesTable.findRow({ ID: item.id.toString() });
-                let actionButtons = `<button id="control-${item.id}" class="aimware-button">Control</button>`;
-                if (item.controller) {
-                    actionButtons += ` <button id="connect-${item.id}" class="aimware-button">Connect</button>`;
-                }
+                let actionButtons = `
+<button id="control-${item.id}" style="width: 200px;" class="aimware-button">${!item.controller ? "Control" : "Uncontrol"}</button>
+<button id="connect-${item.id}" style="width: 200px;" class="aimware-button">${!item.connected ? "Connect" : "Disconnect"}</button>
+`;
 
                 const rowData = {
                     ID: item.id.toString(),
@@ -175,11 +175,17 @@ function initUI() {
                 }
 
                 document.getElementById(`control-${item.id}`).addEventListener("click", () => {
-                    botnetSocket.emit("control", item.id);
+                    if(item.controller) {
+                        botnetSocket.emit("uncontrol", item.id);
+                    } else {
+                        botnetSocket.emit("control", item.id);
+                    }
                 });
 
-                if (item.controller) {
-                    document.getElementById(`connect-${item.id}`).addEventListener("click", () => {
+                document.getElementById(`connect-${item.id}`).addEventListener("click", () => {
+                    if(item.connected) {
+                        botnetSocket.emit("close", item.id);
+                    } else {
                         botnetSocket.emit("con", item.id, OWOP.options.serverAddress[0].url, "arraybuffer");
 
                         const bot = new OJS.Client({
@@ -196,8 +202,8 @@ function initUI() {
                         bot.on("close", () => {
                             bots.splice(bots.indexOf(bot), 1);
                         });
-                    });
-                }
+                    }
+                });
             });
         });
     }

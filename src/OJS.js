@@ -676,12 +676,14 @@ class Client extends EventEmitter {
             }
 
             if (!options.zombie) {
+                console.log("not zombie");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = onOpen;
                 ws.onmessage = onMessage;
                 ws.onclose = onClose;
                 ws.onerror = onError;
             } else {
+                console.log("zombie");
                 ws.on("open", onOpen);
                 ws.on("message", onMessage);
                 ws.on("close", onClose);

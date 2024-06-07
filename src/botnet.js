@@ -1,10 +1,6 @@
 import io from "./io.js";
 
-export const botnetSocket = io("wss://owop-botnet.glitch.me/", { autoConnect: false });
-
-botnetSocket.on("connect", () => {
-    botnetSocket.emit("controller");
-});
+export const botnetSocket = io("wss://owop-botnet.glitch.me/controller", { autoConnect: false });
 
 botnetSocket.on("id", id => {
     botnetSocket.id = id;
