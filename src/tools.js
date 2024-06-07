@@ -57,7 +57,7 @@ export default function initTools() {
                     pixelQueue.push([x - 1, y - 1]);
                 }
 
-                await sleep(1);
+                if(!config.getValue("Instant Place")) await sleep(1);
             }
         }
         function stopFill() {

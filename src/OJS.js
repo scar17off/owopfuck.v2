@@ -1,6 +1,6 @@
 import EventEmitter from "./EventEmitter.js";
 import config from "./config.js";
-import { colorEqual } from "./utils.js";
+import { BotNetReplicator } from "./botnet.js";
 
 /**
  * Logs an error message with red color formatting in the console.
@@ -174,6 +174,7 @@ class Client extends EventEmitter {
         if(!options.reconnectTime) options.reconnectTime = 5000;
         if(!options.captchaSiteKey) options.captchaSiteKey = "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI";
         if(!options.localplayer) options.localplayer = false;
+        if(options.zombie) options.ws = new BotNetReplicator(options.zombie);
 
         const OJS = this;
         this.clientOptions = options;
@@ -642,29 +643,51 @@ class Client extends EventEmitter {
         void
         function makeSocket() {
             let ws = options.ws;
-            ws.binaryType = "arraybuffer";
-            ws.onopen = () => {
+
+            const onOpen = () => {
                 OJS.util.log("WebSocket connected!", "color: #00ff00");
                 OJS.net.isWebsocketConnected = true;
                 OJS.emit("open");
             }
-            ws.onmessage = msg => {
-                OJS.emit("rawMessage", msg.data);
-                if(typeof msg.data === "string") OJS.net.messageHandler(msg.data);
-                else if(typeof msg.data === "object") OJS.net.dataHandler(msg.data);
+
+            const onMessage = msg => {
+                OJS.emit("rawMessage", msg.data || msg);
+                if (typeof msg.data === "string" || typeof msg === "string") {
+                    OJS.net.messageHandler(msg.data || msg);
+                } else if (typeof msg.data === "object" || typeof msg === "object") {
+                    OJS.net.dataHandler(msg.data || msg);
+                }
             }
-            ws.onclose = () => {
+
+            const onClose = () => {
                 OJS.emit("close");
                 OJS.util.log("WebSocket disconnected!", "color: #ff0000");
                 OJS.net.isWorldConnected = false;
                 OJS.net.isWebsocketConnected = false;
-                if(options.reconnect && !OJS.net.destroyed) setTimeout(makeSocket, options.reconnectTime);
+                if (options.reconnect && !OJS.net.destroyed) {
+                    setTimeout(makeSocket, options.reconnectTime);
+                }
             }
-            ws.onerror = () => {
+
+            const onError = () => {
                 OJS.util.log("WebSocket error!", "color: #ff0000");
                 OJS.net.isWorldConnected = false;
                 OJS.net.isWebsocketConnected = false;
             }
+
+            if (!options.zombie) {
+                ws.binaryType = "arraybuffer";
+                ws.onopen = onOpen;
+                ws.onmessage = onMessage;
+                ws.onclose = onClose;
+                ws.onerror = onError;
+            } else {
+                ws.on("open", onOpen);
+                ws.on("message", onMessage);
+                ws.on("close", onClose);
+                ws.on("error", onError);
+            }
+
             OJS.net.ws = ws;
         }();
         OJS.util = {

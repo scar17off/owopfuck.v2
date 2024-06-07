@@ -1,5 +1,5 @@
 import config from "./config.js";
-import { bots, jobList } from "./sharedState.js";
+import { bots } from "./sharedState.js";
 
 /**
  * Delays the execution of the next part of the code.
@@ -25,11 +25,12 @@ let last = 0;
  */
 export function getFree() {
     let usePlayer = config.getValue("Use Player");
-    let b = bots.filter(i => i.net.isWebsocketConnected && i.net.isWorldConnected && (!i.clientOptions.localplayer || usePlayer));
+    let b = bots.filter(i => i.net.isWebsocketConnected && i.net.isWorldConnected && (usePlayer || !i.clientOptions.localplayer));
     if(b.length === 0) return -1;
     if(last >= b.length) last = 0;
     let index = bots.indexOf(b[last]);
     last++;
+
     return index;
 }
 

