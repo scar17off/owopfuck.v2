@@ -50,8 +50,8 @@ class UltimateConfig {
                 current = current[key];
             } else {
                 return undefined;
-            };
-        };
+            }
+        }
 
         return current;
     };
@@ -78,7 +78,8 @@ const structure = {
     "Smart Sneaky": false,
     "Diagonal Fill": false,
     "Use Player": false,
-    "Always Sleep": false
+    "Always Sleep": false,
+    "Proxies": []
 }
 
 for (const key in structure) {

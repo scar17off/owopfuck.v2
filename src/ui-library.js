@@ -138,7 +138,7 @@ export default class Aimware {
                         if(!callback) callback = () => {};
 
                         const configName = name.startsWith("!") ? name.slice(1) : name;
-                        const value = config.getValue(configName);
+                        const value = config.getValue(configName) || '';
                         const inputWrapper = document.createElement("div");
                         inputWrapper.style.display = "flex";
                         inputWrapper.style.flexDirection = "column";
@@ -161,6 +161,12 @@ export default class Aimware {
                         inputWrapper.appendChild(input);
 
                         section.appendChild(inputWrapper);
+
+                        return {
+                            get value() {
+                                return input.value;
+                            }
+                        }
                     },
                     addRange: (name, min, max, callback) => {
                         if(!callback) callback = () => {};
@@ -249,6 +255,9 @@ export default class Aimware {
                                 options.forEach(option => {
                                     this.addOption(option);
                                 });
+                            },
+                            get value() {
+                                return dropdown.value;
                             }
                         }
                     },
@@ -259,7 +268,11 @@ export default class Aimware {
                         const trHead = document.createElement("tr");
                         columns.forEach(column => {
                             const th = document.createElement("th");
-                            th.textContent = column;
+                            const columnParts = column.split('.');
+                            th.textContent = columnParts[0]; // Display only the main part of the column name before the dot
+                            if (columnParts.length > 1) {
+                                th.classList.add(columnParts[1]); // Apply the class name from the part after the dot to th
+                            }
                             trHead.appendChild(th);
                         });
                         thead.appendChild(trHead);
@@ -270,7 +283,7 @@ export default class Aimware {
                             const tr = document.createElement("tr");
                             columns.forEach(column => {
                                 const td = document.createElement("td");
-                                td.textContent = row[column];
+                                td.textContent = row[column.split('.')[0]]; // Ensure to use only the main part of the column name for data retrieval
                                 tr.appendChild(td);
                             });
                             tbody.appendChild(tr);

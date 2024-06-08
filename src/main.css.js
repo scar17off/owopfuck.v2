@@ -348,15 +348,19 @@ html, body {
 #aimware-window th, #aimware-window td {
 	font-size: 12.5px;
 	padding: 2px;
-	border-color: rgb(200, 200, 200);
-	border-width: 1px;
-	border-style: double;
-	border-right-style: none;
 	border: solid 1px rgb(55, 55, 55);
 }
-#aimware-window th:last-child {
+
+.rgb-cell {
     width: 20px;
 }
+.action-cell {
+	width: 200px;
+}
+.connection-cell {
+	width: 25px;
+}
+
 #aimware-window tr:first-child {
 	text-align: center;
 	border: solid 1px rgb(55, 55, 55);

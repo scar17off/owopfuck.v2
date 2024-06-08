@@ -167,6 +167,10 @@ class Client extends EventEmitter {
      * @param {?boolean} options.simpleChunks Use original OWOP chunks instead of OJS
      * @param {WebSocket} options.ws WebSocket connection instance
      * @param {?boolean} [options.localplayer=false] LocalPlayer WebSocket
+     * @param {?string} [options.proxy] Proxy name
+     * @param {?string} [options.proxyType] Proxy type
+     * @param {?string} [options.zombie] Zombie ID
+     * @param {?string} [options.connection] Connection type
      */
     constructor(options = {}) {
         super();
@@ -174,8 +178,27 @@ class Client extends EventEmitter {
         if(!options.reconnectTime) options.reconnectTime = 5000;
         if(!options.captchaSiteKey) options.captchaSiteKey = "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI";
         if(!options.localplayer) options.localplayer = false;
-        if(options.zombie) options.ws = new BotNetReplicator(options.zombie);
 
+        if(!options.ws) {
+            if(options.zombie) {
+                options.connection = '🧟';
+                options.ws = new BotNetReplicator(options.zombie);
+            } else if(options.proxy) {
+                options.connection = '📡';
+                options.ws = new WebSocket(`wss://${options.proxy}.${options.proxyType}/?wss=${OWOP.net.currentServer.url}&origin=${location.origin}`);
+            } else {
+                options.ws = new WebSocket(OWOP.net.currentServer.url, null, {
+                    headers: {
+                    "Origin": location.origin,
+                    "Referer": document.referrer
+                },
+                    origin: location.origin
+                });
+            }
+        }
+
+        if(!options.connection) options.connection = '🖥️';
+        
         const OJS = this;
         this.clientOptions = options;
         this.RANK = {

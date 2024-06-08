@@ -8,6 +8,21 @@ import socket from "./ws-hijacking.js";
 import { getLocalPlayer } from "./utils.js";
 import { botnetSocket } from "./botnet.js";
 
+function connectBot(options) {
+    const bot = new OJS.Client({
+        nickname: config.getValue("Bot Nickname"),
+        autoreconnect: config.getValue("Bot AutoReconnect"),
+        world: OWOP.world.name,
+        unsafe: location.host == "augustberchelmann.com",
+        modlogin: config.getValue("AutoLogin") ? localStorage.modlogin : undefined,
+        adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
+        simpleChunks: false,
+        ...options
+    });
+    bot.on("id", () => bots.push(bot));
+    bot.on("close", () => bots.splice(bots.indexOf(bot), 1));
+}
+
 function initUI() {
     const UI = new AimwareUI("owopfuck.v2", {
         width: 800,
@@ -58,41 +73,20 @@ function initUI() {
         BotMain.addToggle("AutoLogin");
         BotMain.addToggle("AutoLogin");
         BotMain.addRange("Bot Count", 1, 10, 1);
-
-        function connectBot() {
-            const bot = new OJS.Client({
-                nickname: config.getValue("Bot Nickname"),
-                autoreconnect: config.getValue("Bot AutoReconnect"),
-                world: OWOP.world.name,
-                unsafe: location.host == "augustberchelmann.com",
-                modlogin: config.getValue("AutoLogin") ? localStorage.modlogin : undefined,
-                adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
-                ws: new WebSocket(OWOP.net.currentServer.url, null, {
-					headers: {
-						"Origin": location.origin,
-						"Referer": document.referrer
-					},
-					origin: location.origin
-				}),
-                simpleChunks: false
-            });
-            bot.on("id", () => bots.push(bot));
-            bot.on("close", () => bots.splice(bots.indexOf(bot), 1));
-        }
         
         BotMain.addButton("Connect", () => {
             for(let i = 0; i < config.getValue("Bot Count"); i++) connectBot();
         });
 
         BotMain.addButton("Disconnect", () => {
-            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].net.ws.close();
+            bots.filter(bot => !bot.clientOptions.localplayer).forEach(bot => bot.net.ws.close());
         });
 
         BotMain.addLabel("Chat");
 
-        BotMain.addInput('!Message', "Message");
+        BotMain.addInput("!Message", "Message");
         BotMain.addButton("Send", () => {
-            for(let i in bots.filter(bot => !bot.clientOptions.localplayer)) bots[i].chat.send(config.getValue("Message"));
+            bots.filter(bot => !bot.clientOptions.localplayer).forEach(bot => bot.chat.send(config.getValue("Message")));
         });
 
         /* Patterns */
@@ -161,7 +155,7 @@ function initUI() {
 
                 const rowData = {
                     ID: item.id.toString(),
-                    IP: item.ip.split(',').join(' | '),
+                    IP: item.ip.split(',').join(" | "),
                     CONTROL: item.controller ? "Yes" : "No",
                     ACTION: actionButtons
                 }
@@ -186,18 +180,7 @@ function initUI() {
                     } else {
                         botnetSocket.emit("con", item.id, OWOP.options.serverAddress[0].url, "arraybuffer");
 
-                        const bot = new OJS.Client({
-                            nickname: config.getValue("Bot Nickname"),
-                            autoreconnect: config.getValue("Bot AutoReconnect"),
-                            world: OWOP.world.name,
-                            unsafe: location.host == "augustberchelmann.com",
-                            modlogin: config.getValue("AutoLogin") ? localStorage.modlogin : undefined,
-                            adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
-                            simpleChunks: false,
-                            zombie: item.id
-                        });
-                        bot.on("id", () => bots.push(bot));
-                        bot.on("close", () => bots.splice(bots.indexOf(bot), 1));
+                        connectBot({ zombie: item.id });
                     }
                 });
             });
@@ -205,6 +188,45 @@ function initUI() {
     }
     {
         const Proxy = UI.addTab("Proxy");
+
+        const ProxyMain = Proxy.addSection("!Main");
+
+        const ProxyName = ProxyMain.addInput("!Proxy Name", "Name");
+        const ProxyType = ProxyMain.addDropdown("!Proxy Type", ["glitch.me"]);
+
+        function getEditURL(proxyName, proxyType) {
+            if(proxyType == "glitch.me") return `https://glitch.com/edit/#!/ws-proxy${proxyName}-${proxyType}?path=server.js%3A5%3A33`;
+            return `https://${proxyName}.${proxyType}`;
+        }
+
+        ProxyMain.addButton("Add", () => {
+            const proxies = config.getValue("Proxies");
+            proxies.push({ name: ProxyName.value, type: ProxyType.value });
+            config.setValue("Proxies", proxies);
+
+            const actionButtons = `
+<button id="connect-proxy-${ProxyName.value}" style="width: 200px;" class="aimware-button">Connect</button>
+<button id="delete-proxy-${ProxyName.value}" style="width: 200px;" class="aimware-button">Delete</button>
+`;
+
+            ProxyTable.addRow({ NAME: `<a href="${getEditURL(ProxyName.value, ProxyType.value)}">${ProxyName.value}</a>`, "ACTION.action-cell": actionButtons });
+
+            document.getElementById(`connect-proxy-${ProxyName.value}`).addEventListener("click", () => {
+                connectBot({ proxy: ProxyName.value, proxyType: ProxyType.value });
+            });
+
+            document.getElementById(`delete-proxy-${ProxyName.value}`).addEventListener("click", () => {
+                ProxyTable.removeRow({ NAME: ProxyName.value });
+                config.setValue("Proxies", config.getValue("Proxies").filter(item => item.name != ProxyName.value && item.type != ProxyType.value));
+            });
+        });
+
+        const ProxyTable = ProxyMain.addTable(["NAME", "ACTION.action-cell"]);
+
+        const proxies = config.getValue("Proxies");
+        proxies.forEach(proxy => {
+            ProxyTable.addRow({ NAME: `<a href="${getEditURL(proxy.name, proxy.type)}">${proxy.name}</a>`, "ACTION.action-cell": actionButtons });
+        });
     }
     {
         const List = UI.addTab("List");
@@ -212,31 +234,34 @@ function initUI() {
         const ListPlayers = List.addSection("!Players");
         const ListBots = List.addSection("!Bots");
 
-        const playersTable = ListPlayers.addTable(["ID", "X", "Y", "RGB"]);
-        const botsTable = ListBots.addTable(["ID", "X", "Y", "RGB"]);
+        const playersTable = ListPlayers.addTable(["ID", "X", "Y", "CONNECTION.connection-cell", "RGB.rgb-cell"]);
+        const botsTable = ListBots.addTable(["ID", "X", "Y", "CONNECTION.connection-cell", "RGB.rgb-cell"]);
 
         const client = getLocalPlayer();
         
         client.on("connect", ID => {
             setTimeout(() => {
-                if(bots.some(bot => bot.player.id == ID)) {
-                    botsTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
+                const bot = bots.find(bot => bot.player.id == ID);
+                if(bot) {
+                    botsTable.addRow({ ID, X: 0, Y: 0, "CONNECTION.connection-cell": bot.clientOptions.connection, "RGB.rgb-cell": createColorDiv("0,0,0") });
                     return;
                 }
-                playersTable.addRow({ ID, X: 0, Y: 0, RGB: createColorDiv("0,0,0") });
+                playersTable.addRow({ ID, X: 0, Y: 0, "CONNECTION.connection-cell": "🤡", "RGB.rgb-cell": createColorDiv("0,0,0") });
             }, 500);
         });
 
         client.on("update", player => {
-            if(bots.some(bot => bot.player.id == player.id)) {
-                botsTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, RGB: createColorDiv(player.rgb || "0,0,0") });
+            const bot = bots.find(bot => bot.player.id == player.id);
+            if(bot) {
+                botsTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": bot.clientOptions.connection, "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
                 return;
             }
-            playersTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, RGB: createColorDiv(player.rgb || "0,0,0") });
+            playersTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": "🤡", "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
         });
 
         client.on("disconnect", ID => {
-            if(bots.some(bot => bot.player.id == ID)) {
+            const bot = bots.find(bot => bot.player.id == ID);
+            if(bot) {
                 botsTable.removeRow({ ID });
                 return;
             }
