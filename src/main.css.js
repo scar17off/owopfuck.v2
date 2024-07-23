@@ -1,4 +1,5 @@
-export default `.animbuilder-canvas-container {
+export default `
+.animbuilder-canvas-container {
 	background-color: rgba(255, 255, 255, 0.03);
 	position: relative;
 	display: inline-block;
@@ -22,7 +23,6 @@ export default `.animbuilder-canvas-container {
 	background-color: rgb(17, 19, 20);
 }
 #aimware-window label {
-	color: rgb(230, 230, 230);
 	font-size: 16px;
 }
 #aimware-window input {
@@ -30,11 +30,14 @@ export default `.animbuilder-canvas-container {
 	border: 2px solid #222324;
 	margin-left: 10px;
 	border-radius: 3px;
-	color: rgb(230, 230, 230);
 }
-#aimware-window input[type="text"] {
-	margin: 0 auto;
-    width: 90%;
+.aimware-input[type="text"] {
+	background-color: transparent;
+	border: 2px solid #222324;
+	border-radius: 3px;
+	margin-left: 10px;
+	width: 93%;
+	margin-bottom: 5px;
 }
 .aimware-dropdown > option {
 	background-color: rgb(24, 26, 28);
@@ -46,7 +49,6 @@ export default `.animbuilder-canvas-container {
 	border: 2px solid #222324;
 	border-radius: 3px;
 	margin-left: 10px;
-	color: rgb(230, 230, 230);
 	width: 93%;
 	margin-top: 1px;
 }
@@ -57,7 +59,7 @@ export default `.animbuilder-canvas-container {
 	border: 1px solid #222324;
 	border-radius: 3px;
 	margin-left: 10px;
-	color: white;
+	color: white !important;
 	text-align: center;
 }
 input.aimware-range[type="range"] {
@@ -103,7 +105,6 @@ input.aimware-range2[type="range"] {
 	background: transparent;
 	cursor: pointer;
 	width: 190px;
-	margin-left: 10px;
 }
 input.aimware-range2[type="range"]:focus {
 	outline: none;
@@ -138,11 +139,9 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
 	/* -moz-appearance: textfield; */
 	background-color: transparent;
 	border: 2px solid #222324;
-	margin-left: 10px;
 	border-radius: 3px;
-	color: rgb(230, 230, 230);
 	width: 35px;
-    text-align: center;
+	text-align: center;
 }
 /*
 .aimware-rangetext::-webkit-inner-spin-button,
@@ -154,9 +153,11 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
 .aimware-cbtext {
 	position: absolute;
 	margin-top: 4px;
-	margin-left: 6px;
-	color: rgb(230, 230, 230);
+	margin-left: 6px;x
 	font-size: 13px;
+}
+#aimware-content * {
+	color: rgb(230, 230, 230);
 }
 hr.aimware-hr {
 	border: solid 1px rgb(74, 86, 198);
@@ -164,34 +165,48 @@ hr.aimware-hr {
 	margin-bottom: 5px;
 	margin-top: 3px;
 }
-.aimware-section > label:first-child {
-	color: rgb(230, 230, 230);
-}
 div.aimware-section {
 	border-radius: 5px;
-	height: 530px;
 	background-color: rgb(22, 24, 26);
 	margin: 10px 5px 0px 5px;
 	padding: 5px;
+	height: 525px;
 	flex: 1;
 }
+div.aimware-section > label[for] {
+	margin-left: 10px;
+}
+div.aimware-section > div > label {
+	margin-left: 10px;
+}
 .aimware-tab {
-	display: flex;
+    display: flex;
 	overflow-y: auto;
+}
+.aimware-range-wrapper {
+	display: flex;
+    align-items: center;
+}
+.aimware-range-wrapper input[type="range"] {
+    flex: 1;
+    width: -webkit-fill-available;
+}
+.aimware-range-wrapper input[type="number"] {
+    width: 50px;
 }
 #aimware-tablist {
 	text-align: right;
 	margin-top: -40px;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: rgb(65, 65, 65);
+	background-color: rgb(65, 65, 65);
 }
 ::-webkit-scrollbar-button {
    	display: none;
 }
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 1px;
+	width: 6px;
+	height: 1px;
 }
 html, body {
 	background-color: rgb(11, 11, 11);
@@ -201,7 +216,7 @@ html, body {
 	background: transparent;
 	width: 95px;
 	height: 40px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	padding: 0;
 	margin: 0;
@@ -220,7 +235,7 @@ html, body {
 	border-bottom: solid 2px rgb(74 88 200);
 	width: 95px;
 	height: 40px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	padding: 0;
 	margin: 0;
@@ -231,7 +246,7 @@ html, body {
 	border-bottom: solid 2px rgb(44 58 170);
 	width: 95px;
 	height: 40px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	padding: 0;
 	margin: 0;
@@ -242,10 +257,13 @@ html, body {
 	background-color: rgba(127, 127, 127, 0.1);
 	width: 90%;
 	height: 25px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
+	margin-bottom: 5px;
+	margin-top: 5px;
 	
-	margin: 0 auto; /* Center the button horizontally */
+	margin-left: auto;
+	margin-right: auto;
 	display: block; /* Needed to use margin auto for centering */
 }
 .aimware-button-small {
@@ -254,7 +272,7 @@ html, body {
 	background: rgba(200, 200, 200, 0.01);
 	width: 72%;
 	height: 25px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	margin-bottom: 1px;
 	margin-top: 2px;
@@ -266,7 +284,7 @@ html, body {
 	background: rgba(200, 200, 200, 0.01);
 	width: 40%;
 	height: 25px;
-	color: rgb(150, 150, 150);
+	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	margin-bottom: 1px;
 	margin-top: 2px;
@@ -278,12 +296,12 @@ html, body {
 	height: 40px;
 }
 .control {
-    display: block;
-    position: relative;
-    padding: 5px 0px 5px 25px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-left: 10px;
+	display: block;
+	position: relative;
+	padding: 5px 0px 5px 25px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-left: 10px;
 }
 .control input {
 	position: absolute;
@@ -340,7 +358,7 @@ html, body {
 }
 #aimware-window table {
 	border-collapse: collapse;
-	color: rgb(75, 88, 213);
+	color: rgb(75, 88, 213) !important;
 	text-align: center;
 	width: -webkit-fill-available;
 	border: solid 1px rgb(55, 55, 55);
@@ -352,7 +370,7 @@ html, body {
 }
 
 .rgb-cell {
-    width: 20px;
+	width: 20px;
 }
 .action-cell {
 	width: 200px;
@@ -364,4 +382,5 @@ html, body {
 #aimware-window tr:first-child {
 	text-align: center;
 	border: solid 1px rgb(55, 55, 55);
-}`
+}
+`

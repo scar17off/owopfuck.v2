@@ -259,7 +259,8 @@ function initUI() {
             playersTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": "🤡", "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
         });
 
-        client.on("disconnect", ID => {
+        client.on("disconnect", player => {
+            const ID = player.id;
             const bot = bots.find(bot => bot.player.id == ID);
             if(bot) {
                 botsTable.removeRow({ ID });

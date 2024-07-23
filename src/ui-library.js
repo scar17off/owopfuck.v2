@@ -14,8 +14,8 @@ export default class Aimware {
         const Aimware = this;
 
         this.window = OWOP.windowSys.addWindow(new OWOP.windowSys.class.window(Aimware.title, {
-			closeable: false
-		}, function (win) {
+            closeable: false
+        }, function (win) {
             const container = win.container;
             container.id = "aimware-window";
             container.style.cssText = `
@@ -52,30 +52,40 @@ export default class Aimware {
             `;
         }).move(Aimware.options.x, Aimware.options.y));
 
-        if(options.keybind) {
-            document.addEventListener("keydown", function(e) {  
-                if(e.key === options.keybind) {
+        if (options.keybind) {
+            document.addEventListener("keydown", function (e) {
+                if (e.key === options.keybind) {
                     Aimware.switchVisibility(OWOP.windowSys.windows["owopfuck.v2"].container.parentNode.hidden);
                 }
             });
         }
 
-        if(!options.visible) {
+        if (!options.visible) {
             Aimware.switchVisibility(false);
         }
     }
-    addTab(name) { 
+    addTab(name) {
         const flagName = getFlagName(name);
         const tabButton = document.createElement("button");
         tabButton.id = `aimware-tab-button-${flagName}`;
-        tabButton.onclick = () => owopfuck.setTab(flagName);
+        tabButton.onclick = () => {
+            this.setTab(flagName);
+            document.querySelectorAll(".aimware-tab-button").forEach(button => button.classList.remove("aimware-tab-button-active"));
+            tabButton.classList.add("aimware-tab-button-active");
+        };
         tabButton.textContent = name;
         tabButton.className = "aimware-tab-button";
-        this.window.container.querySelector("#aimware-tablist").appendChild(tabButton);
+        const tabList = this.window.container.querySelector("#aimware-tablist");
+        tabList.appendChild(tabButton);
+        if (tabList.children.length === 1) {
+            tabButton.click();
+        }
 
         const tab = document.createElement("div");
         tab.id = `tab-${flagName}`;
         tab.className = "aimware-tab";
+        const activeButton = document.getElementById(`aimware-tab-button-${flagName}`);
+        tab.style.display = activeButton && activeButton.classList.contains("aimware-tab-button-active") ? "flex" : "none";
         this.window.container.querySelector("#aimware-content").appendChild(tab);
 
         return {
@@ -84,7 +94,7 @@ export default class Aimware {
                 section.className = "aimware-section";
                 tab.appendChild(section);
 
-                if(!sectionName.startsWith("!")) {
+                if (!sectionName.startsWith("!")) {
                     const sectionLabel = document.createElement("label");
                     sectionLabel.textContent = sectionName;
                     section.appendChild(sectionLabel);
@@ -105,7 +115,7 @@ export default class Aimware {
                         section.appendChild(button);
                     },
                     addToggle: (name, callback) => {
-                        if(!callback) callback = () => {};
+                        if (!callback) callback = () => { };
 
                         const value = config.getValue(name);
                         const controlGroup = document.createElement("div");
@@ -135,7 +145,7 @@ export default class Aimware {
                         section.appendChild(controlGroup);
                     },
                     addInput: (name, placeholder, callback) => {
-                        if(!callback) callback = () => {};
+                        if (!callback) callback = () => { };
 
                         const configName = name.startsWith("!") ? name.slice(1) : name;
                         const value = config.getValue(configName) || '';
@@ -154,6 +164,7 @@ export default class Aimware {
                         input.type = "text";
                         input.value = value;
                         input.placeholder = placeholder;
+                        input.className = "aimware-input";
                         input.onchange = e => {
                             config.setValue(e.target.value, configName);
                             callback(e.target.value);
@@ -169,10 +180,11 @@ export default class Aimware {
                         }
                     },
                     addRange: (name, min, max, callback) => {
-                        if(!callback) callback = () => {};
+                        if (!callback) callback = () => { };
 
                         const value = config.getValue(name);
                         const rangeWrapper = document.createElement("div");
+                        rangeWrapper.className = "aimware-range-wrapper";
 
                         const label = document.createElement("label");
                         label.textContent = name;
@@ -182,13 +194,16 @@ export default class Aimware {
                         rangeInput.type = "range";
                         rangeInput.min = min;
                         rangeInput.max = max;
+                        rangeInput.step = (min % 1 !== 0 || max % 1 !== 0) ? 0.1 : 1;
                         rangeInput.value = value;
                         rangeInput.name = name.toLowerCase().replace(/\s/g, '');
                         rangeInput.oninput = e => {
                             numberInput.value = e.target.value;
-                            config.setValue(parseInt(e.target.value), name);
+                            config.setValue(parseFloat(e.target.value), name);
                             callback(e.target.value);
                         }
+
+                        const br = document.createElement("br");
 
                         const numberInput = document.createElement("input");
                         numberInput.id = `aimware-${name.toLowerCase().replace(/\s/g, '')}-input`;
@@ -197,21 +212,23 @@ export default class Aimware {
                         numberInput.style.marginLeft = "0px";
                         numberInput.min = min;
                         numberInput.max = max;
+                        numberInput.step = (min % 1 !== 0 || max % 1 !== 0) ? 0.1 : 1;
                         numberInput.value = value;
                         numberInput.oninput = e => {
                             rangeInput.value = e.target.value;
-                            config.setValue(parseInt(e.target.value), name);
+                            config.setValue(parseFloat(e.target.value), name);
                             callback(e.target.value);
                         }
 
                         rangeWrapper.appendChild(label);
+                        rangeWrapper.appendChild(br);
                         rangeWrapper.appendChild(rangeInput);
                         rangeWrapper.appendChild(numberInput);
 
                         section.appendChild(rangeWrapper);
                     },
                     addDropdown: (name, options, callback) => {
-                        if(!callback) callback = () => {};
+                        if (!callback) callback = () => { };
 
                         const value = config.getValue(name);
                         const dropdown = document.createElement("select");
@@ -350,13 +367,31 @@ export default class Aimware {
             }
         }
     }
+
     switchVisibility(value) {
         OWOP.windowSys.windows[this.title].container.parentNode.hidden = !value;
+    }
+
+    setTab(tab) {
+        const tabButtons = document.querySelectorAll("#aimware-tablist button");
+        const tabs = document.querySelectorAll(".aimware-tab");
+        tabButtons.forEach(button => {
+            button.classList.remove("aimware-tab-button-active");
+        });
+        tabs.forEach(tabElement => {
+            tabElement.style.display = "none";
+        });
+        const activeTabButton = document.querySelector(`#aimware-tab-button-${tab}`);
+        const activeTab = document.querySelector(`#tab-${tab}`);
+        if (activeTabButton && activeTab) {
+            activeTabButton.classList.add("aimware-tab-button-active");
+            activeTab.style.display = "flex";
+        }
     }
 }
 
 window.owopfuck = {
-    setTab: function(tab) {
+    setTab: function (tab) {
         const tabButtons = document.querySelectorAll("#aimware-tablist button");
         const tabs = document.querySelectorAll(".aimware-tab");
         tabButtons.forEach(button => {
