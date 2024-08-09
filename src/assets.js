@@ -17,8 +17,6 @@ export default function initAssets() {
 	OWOP.windowSys.addWindow(new OWOP.windowSys.class.window("owopfuck assets", {
 		closeable: false
 	}, function (win) {
-		const div = document.createElement("div");
-
 		let container = win.container;
 		container.parentNode.style.width = "260px";
 		container.parentNode.style.height = "500px";
@@ -31,11 +29,8 @@ export default function initAssets() {
 		container.parentNode.style["background-color"] = "rgb(17, 19, 20)";
 		container.parentNode.style["border"] = "4px rgb(17, 19, 20) solid";
 
-		div.innerHTML = `<button id="owopfuck-asset-add" class="aimware-button">Upload</button>
-	<br>
+		win.container.innerHTML = `<button id="owopfuck-asset-add" class="aimware-button">Upload</button>
 	<div id="owopfuck-assets-container"></div>`;
-
-		win.addObj(div);
 	}).move(130, 200));
 
 	document.getElementById("owopfuck-asset-add").addEventListener("click", async () => {

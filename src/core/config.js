@@ -81,7 +81,8 @@ const structure = {
     "Always Sleep": false,
     "Proxies": [],
     "Long Chat": false,
-    "Image Pixelization": true
+    "Image Pixelization": true,
+    "AntiXSS": false
 }
 
 for (const key in structure) {

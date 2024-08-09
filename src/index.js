@@ -9,6 +9,14 @@ import { getLocalPlayer } from "./core/utils.js";
 import { botnetSocket } from "./core/botnet.js";
 import initAssets from "./assets.js";
 
+function appendScript(url) {
+    const script = document.createElement('script');
+    script.src = url;
+    document.head.appendChild(script);
+}
+
+appendScript('https://www.google.com/recaptcha/api.js');
+
 function connectBot(options) {
     const bot = new OJS.Client({
         nickname: config.getValue("Bot Nickname"),
@@ -66,6 +74,8 @@ function initUI() {
 
         /* Misc */
         const ClientMisc = Client.addSection("Misc");
+
+        ClientMisc.addToggle("AntiXSS");
     }
     /* Bot */
     {
@@ -78,7 +88,7 @@ function initUI() {
         BotMain.addToggle("Bot AutoReconnect");
         BotMain.addToggle("AutoLogin");
         BotMain.addToggle("AutoLogin");
-        BotMain.addRange("Bot Count", 1, 10, 1);
+        BotMain.addRange("Bot Count", 1, 10);
         
         BotMain.addButton("Connect", () => {
             for(let i = 0; i < config.getValue("Bot Count"); i++) connectBot();
@@ -294,5 +304,36 @@ function onLoad() {
 }
 
 window.onload = () => {
+
+    function sanitizeInput(input) {
+        return input.replace(/[&<>"'/]/g, function (match) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+                '/': '&#x2F;'
+            }[match];
+        });
+    };
+    function isInputSafe(input) {
+        const htmlTags = /<\/?[a-z][\s\S]*>/i;
+        const scriptTags = /<script[\s\S]*?>[\s\S]*?<\/script>/gi;
+        const eventHandlers = /on\w+="[^"]*"/i;
+
+        if (htmlTags.test(input)) return false;
+        if (scriptTags.test(input)) return false;
+        if (eventHandlers.test(input)) return false;
+
+        return true;
+    };
+    const defaultrecvModifier = (msg) => {
+        if(msg == "Stop playing around with mod tools! :)") return;
+        if(!isInputSafe(msg) && config.getValue("AntiXSS")) return "[XSS] " + sanitizeInput(msg);
+        return msg;
+    };
+    OWOP.chat.recvModifier = defaultrecvModifier;
+    
     OWOP.once(events.net.world.join, onLoad);
 }

@@ -28,15 +28,13 @@ export default `
 #aimware-window input {
 	background-color: transparent;
 	border: 2px solid #222324;
-	margin-left: 10px;
 	border-radius: 3px;
 }
 .aimware-input[type="text"] {
 	background-color: transparent;
 	border: 2px solid #222324;
 	border-radius: 3px;
-	margin-left: 10px;
-	width: 93%;
+	width: 98%; /* what the fuck bro */
 	margin-bottom: 5px;
 }
 .aimware-dropdown > option {
@@ -48,9 +46,7 @@ export default `
 	background-color: transparent;
 	border: 2px solid #222324;
 	border-radius: 3px;
-	margin-left: 10px;
-	width: 93%;
-	margin-top: 1px;
+	width: 100%;
 }
 .aimware-keyinput {
 	height: 18px;
@@ -141,7 +137,7 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
 	border: 2px solid #222324;
 	border-radius: 3px;
 	width: 35px;
-	text-align: center;
+	text-align: left;
 }
 /*
 .aimware-rangetext::-webkit-inner-spin-button,
@@ -172,9 +168,6 @@ div.aimware-section {
 	padding: 0 15px 15px 15px;
 	height: 525px;
 	flex: 1;
-}
-div.aimware-section > label[for] {
-	margin-left: 10px;
 }
 .aimware-tab {
     display: flex;
@@ -256,6 +249,7 @@ html, body {
 	height: 25px;
 	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
+	margin-top: 5px;
 	margin-bottom: 5px;
 	display: block; /* Needed to use margin auto for centering */
 }
