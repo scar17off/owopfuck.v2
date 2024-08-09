@@ -1,12 +1,13 @@
 import initTools from "./tools.js";
-import events from "./events.js";
-import AimwareUI from "./ui-library.js";
-import config from "./config.js";
-import OJS from "./OJS.js";
-import { bots } from "./sharedState.js";
+import events from "./core/events.js";
+import AimwareUI from "./core/ui-library.js";
+import config from "./core/config.js";
+import OJS from "./core/OJS.js";
+import { bots } from "./core/sharedState.js";
 import socket from "./ws-hijacking.js";
-import { getLocalPlayer } from "./utils.js";
-import { botnetSocket } from "./botnet.js";
+import { getLocalPlayer } from "./core/utils.js";
+import { botnetSocket } from "./core/botnet.js";
+import initAssets from "./assets.js";
 
 function connectBot(options) {
     const bot = new OJS.Client({
@@ -57,6 +58,11 @@ function initUI() {
 
         /* Visuals */
         const ClientVisuals = Client.addSection("Visuals");
+
+        ClientVisuals.addToggle("Long Chat", value => {
+            if(value) document.getElementById("chat").style.maxWidth = "50%";
+            else document.getElementById("chat").style.maxWidth = "450px";
+        });
 
         /* Misc */
         const ClientMisc = Client.addSection("Misc");
@@ -114,9 +120,7 @@ function initUI() {
         BotPattern.addToggle("Diagonal Fill");
         BotPattern.addToggle("Use Player");
         BotPattern.addToggle("Always Sleep");
-    }
-    {
-        const AnimationBuilder = UI.addTab("Animation Builder");
+        BotPattern.addToggle("Image Pixelization");
     }
     {
         const Botnet = UI.addTab("Botnet");
@@ -284,6 +288,7 @@ function initUI() {
 function onLoad() {
     initTools();
     initUI();
+    initAssets();
 
     OWOP.chat.local(`owopfuck.v2 loaded! Use ${config.getValue("MenuKey")} to open the menu.`);
 }

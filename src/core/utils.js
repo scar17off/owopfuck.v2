@@ -1,5 +1,6 @@
 import config from "./config.js";
 import { bots } from "./sharedState.js";
+import { addOverlayImage } from "./overlay.js";
 
 /**
  * Delays the execution of the next part of the code.
@@ -16,6 +17,27 @@ export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
  */
 export function colorEqual(color1, color2) {
     return color1[0] === color2[0] && color1[1] === color2[1] && color1[2] === color2[2];
+}
+
+/**
+ * Prompts the user to upload a file and returns its data as a base64-encoded string.
+ * @param {string} [accept=*] - The file types that the file input should accept.
+ * @returns {Promise<string>} A promise that resolves with the base64-encoded file data.
+ */
+export function upload(accept = "*") {
+    return new Promise(resolve => {
+        let file = document.createElement('input');
+        file.type = "file";
+        file.accept = accept;
+        file.onchange = () => {
+            let reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+            reader.readAsDataURL(file.files[0]);
+        };
+        file.click();
+    });
 }
 
 let last = 0;
@@ -109,5 +131,47 @@ export async function FillArea(x1, y1, x2, y2, color, pattern) {
         const pixel = OWOP.world.getPixel(x, y);
         if (colorEqual(pixel, color)) continue;
         await setPixel(x, y, color, index)
+    }
+}
+
+/**
+ * Retrieves the RGB color of a specific pixel from an image.
+ * @param {CanvasRenderingContext2D} ctx - The canvas context containing the image.
+ * @param {number} x - The x-coordinate of the pixel.
+ * @param {number} y - The y-coordinate of the pixel.
+ * @returns {Array} The RGB color array of the pixel.
+ */
+function getPixelColor(ctx, x, y) {
+    if (!ctx) {
+        console.error('Canvas context is undefined');
+        return [0, 0, 0]; // Return black if context is undefined
+    }
+    var data = ctx.getImageData(x, y, 1, 1).data;
+    return [data[0], data[1], data[2]];
+}
+
+/**
+ * Asynchronously pastes an image onto the world at the specified coordinates.
+ * @param {number} x1 - The x-coordinate of the top-left corner where the image will be pasted.
+ * @param {number} y1 - The y-coordinate of the top-left corner where the image will be pasted.
+ * @param {ImageData} imageData - The image data to be pasted.
+ * @param {CanvasRenderingContext2D} assetContext - The context of the canvas containing the image data.
+ */
+export async function pasteImageData(x1, y1, imageData, assetContext) {
+    if (!imageData || !assetContext) {
+        console.error('ImageData or assetContext is undefined');
+        return;
+    }
+
+    addOverlayImage(assetContext, x1, y1, imageData.width, imageData.height);
+
+    for (const [x, y] of patterns[constants[config.getValue("Paste")]](x1, y1, x1 + imageData.width - 1, y1 + imageData.height - 1)) {
+        const pixel = await OWOP.world.getPixel(x, y);
+        const color = getPixelColor(assetContext, x - x1, y - y1);
+
+        const abc = getFree();
+
+        if (colorEqual(pixel, color)) continue;
+        await setPixel(x, y, color, abc);
     }
 }

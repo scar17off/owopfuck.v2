@@ -153,7 +153,7 @@ input.aimware-range2[type="range"]::-moz-range-thumb {
 .aimware-cbtext {
 	position: absolute;
 	margin-top: 4px;
-	margin-left: 6px;x
+	margin-left: 6px;
 	font-size: 13px;
 }
 #aimware-content * {
@@ -169,14 +169,11 @@ div.aimware-section {
 	border-radius: 5px;
 	background-color: rgb(22, 24, 26);
 	margin: 10px 5px 0px 5px;
-	padding: 5px;
+	padding: 0 15px 15px 15px;
 	height: 525px;
 	flex: 1;
 }
 div.aimware-section > label[for] {
-	margin-left: 10px;
-}
-div.aimware-section > div > label {
 	margin-left: 10px;
 }
 .aimware-tab {
@@ -255,15 +252,11 @@ html, body {
 	border: 2px solid #3e4043;
 	border-radius: 3px;
 	background-color: rgba(127, 127, 127, 0.1);
-	width: 90%;
+	width: 100%;
 	height: 25px;
 	color: rgb(150, 150, 150) !important;
 	font-size: 11.5px;
 	margin-bottom: 5px;
-	margin-top: 5px;
-	
-	margin-left: auto;
-	margin-right: auto;
 	display: block; /* Needed to use margin auto for centering */
 }
 .aimware-button-small {
@@ -301,7 +294,6 @@ html, body {
 	padding: 5px 0px 5px 25px;
 	cursor: pointer;
 	font-size: 14px;
-	margin-left: 10px;
 }
 .control input {
 	position: absolute;

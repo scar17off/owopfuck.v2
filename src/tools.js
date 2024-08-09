@@ -1,19 +1,19 @@
-import { FillArea, colorEqual, setPixel, sleep } from "./utils.js";
-import config from "./config.js";
-import { bots, jobList } from "./sharedState.js";
+import { FillArea, pasteImageData, colorEqual, setPixel, sleep } from "./core/utils.js";
+import config from "./core/config.js";
+import { bots, jobList } from "./core/sharedState.js";
 
 export default function initTools() {
-    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Cursor", OWOP.cursors.cursor, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function(tool) {
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Cursor", OWOP.cursors.cursor, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function (tool) {
         var lastX, lastY;
 
-        tool.setEvent("mousedown mousemove", async function(mouse) {
-            if(mouse.buttons === 4 || mouse.buttons === 0) return;
-            if(!lastX || !lastY) {
+        tool.setEvent("mousedown mousemove", async function (mouse) {
+            if (mouse.buttons === 4 || mouse.buttons === 0) return;
+            if (!lastX || !lastY) {
                 lastX = OWOP.mouse.tileX;
                 lastY = OWOP.mouse.tileY;
             }
 
-            (0, OWOP.util.line)(lastX, lastY, OWOP.mouse.tileX, OWOP.mouse.tileY, 1, async function(x, y) {
+            (0, OWOP.util.line)(lastX, lastY, OWOP.mouse.tileX, OWOP.mouse.tileY, 1, async function (x, y) {
                 const color = mouse.buttons === 2 ? [255, 255, 255] : OWOP.player.selectedColor;
                 await setPixel(x, y, color);
             });
@@ -21,28 +21,28 @@ export default function initTools() {
             lastX = OWOP.mouse.tileX;
             lastY = OWOP.mouse.tileY;
         });
-        tool.setEvent("mouseup", function() {
+        tool.setEvent("mouseup", function () {
             lastX = null;
             lastY = null;
         });
     }));
 
-    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Fill", OWOP.cursors.fill, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function(tool) {
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Fill", OWOP.cursors.fill, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function (tool) {
         let stopFlag = false;
 
         async function floodFill(x, y, targetColor, fillColor) {
-            if(!targetColor || colorEqual(targetColor, fillColor)) return;
+            if (!targetColor || colorEqual(targetColor, fillColor)) return;
             const pixelQueue = [[x, y]];
             const visited = new Set();
 
-            while(pixelQueue.length > 0) {
-                if(stopFlag) return;
+            while (pixelQueue.length > 0) {
+                if (stopFlag) return;
                 const [x, y] = pixelQueue.shift();
-                if(visited.has(`${x},${y}`)) continue;
+                if (visited.has(`${x},${y}`)) continue;
                 visited.add(`${x},${y}`);
                 const currentColor = await OWOP.world.getPixel(x, y);
-                if(!currentColor) return;
-				if(currentColor[0] !== targetColor[0] || currentColor[1] !== targetColor[1] || currentColor[2] !== targetColor[2]) continue;
+                if (!currentColor) return;
+                if (currentColor[0] !== targetColor[0] || currentColor[1] !== targetColor[1] || currentColor[2] !== targetColor[2]) continue;
                 await setPixel(x, y, fillColor);
                 pixelQueue.push([x + 1, y]);
                 pixelQueue.push([x - 1, y]);
@@ -50,14 +50,14 @@ export default function initTools() {
                 pixelQueue.push([x, y - 1]);
 
                 // add diagonals to the queue to fill in a circular pattern
-                if(!config.getValue("Diagonal Fill")) {
+                if (!config.getValue("Diagonal Fill")) {
                     pixelQueue.push([x + 1, y + 1]);
                     pixelQueue.push([x + 1, y - 1]);
                     pixelQueue.push([x - 1, y + 1]);
                     pixelQueue.push([x - 1, y - 1]);
                 }
 
-                if(!config.getValue("Instant Place")) await sleep(1);
+                if (!config.getValue("Instant Place")) await sleep(1);
             }
         }
         function stopFill() {
@@ -67,15 +67,15 @@ export default function initTools() {
 
         let busy = false;
         async function startFill(newX, newY, targetColor, fillColor) {
-            if(busy) return;
+            if (busy) return;
             busy = true;
             stopFlag = false;
             await floodFill(newX, newY, targetColor, fillColor);
         }
 
-        tool.setEvent("mousedown", async function(mouse) {
-            if(mouse.buttons == 0 || mouse.buttons == 4) return;
-            if(bots.length === 0) return;
+        tool.setEvent("mousedown", async function (mouse) {
+            if (mouse.buttons == 0 || mouse.buttons == 4) return;
+            if (bots.length === 0) return;
             startFill(mouse.tileX, mouse.tileY, OWOP.world.getPixel(mouse.tileX, mouse.tileY), OWOP.player.selectedColor);
         });
 
@@ -85,18 +85,18 @@ export default function initTools() {
         });
     }));
 
-    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Area", OWOP.cursors.select, OWOP.fx.player.NONE, OWOP.RANK.USER, function(tool) {
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Area", OWOP.cursors.select, OWOP.fx.player.NONE, OWOP.RANK.USER, function (tool) {
         let step = 1;
-        
-        tool.setFxRenderer(function(fx, ctx, time) {
-            if(!fx.extra.isLocalPlayer) return 1;
+
+        tool.setFxRenderer(function (fx, ctx, time) {
+            if (!fx.extra.isLocalPlayer) return 1;
             let x = fx.extra.player.x;
             let y = fx.extra.player.y;
             let fxx = (Math.floor(x / step) - OWOP.camera.x) * OWOP.camera.zoom;
             let fxy = (Math.floor(y / step) - OWOP.camera.y) * OWOP.camera.zoom;
             let oldlinew = ctx.lineWidth;
             ctx.lineWidth = 1;
-            if(tool.extra.end) {
+            if (tool.extra.end) {
                 let s = tool.extra.start;
                 let e = tool.extra.end;
                 let x = (s[0] - OWOP.camera.x) * OWOP.camera.zoom + 0.5;
@@ -126,7 +126,7 @@ export default function initTools() {
 
                 OWOP.drawText = (ctx, str, x, y, centered) => {
                     ctx.strokeStyle = "#000000", ctx.fillStyle = "#FFFFFF", ctx.lineWidth = 2.5, ctx.globalAlpha = 1;
-                    if(centered) {
+                    if (centered) {
                         x -= ctx.measureText(str).width >> 1;
                     }
                     ctx.strokeText(str, x, y);
@@ -160,7 +160,7 @@ export default function initTools() {
         tool.extra.end = null;
         tool.extra.clicking = false;
 
-        tool.setEvent("mousedown", async function(mouse) {
+        tool.setEvent("mousedown", async function (mouse) {
 
             let s = tool.extra.start;
             let e = tool.extra.end;
@@ -168,11 +168,11 @@ export default function initTools() {
                 return mouse.tileX >= s[0] && mouse.tileX < e[0] && mouse.tileY >= s[1] && mouse.tileY < e[1];
             }
 
-            if(mouse.buttons === 1 && !tool.extra.end) {
+            if (mouse.buttons === 1 && !tool.extra.end) {
                 tool.extra.start = [Math.floor(mouse.tileX / step) * step, Math.floor(mouse.tileY / step) * step];
                 tool.extra.clicking = true;
-                tool.setEvent("mousemove", function(mouse) {
-                    if(tool.extra.start && mouse.buttons === 1) {
+                tool.setEvent("mousemove", function (mouse) {
+                    if (tool.extra.start && mouse.buttons === 1) {
                         tool.extra.end = [Math.floor(mouse.tileX / step) * step, Math.floor(mouse.tileY / step) * step];
                         return 1;
                     }
@@ -184,19 +184,19 @@ export default function initTools() {
                     let s = tool.extra.start;
                     let e = tool.extra.end;
 
-                    if(e) {
-                        if(s[0] === e[0] || s[1] === e[1]) {
+                    if (e) {
+                        if (s[0] === e[0] || s[1] === e[1]) {
                             tool.extra.start = null;
                             tool.extra.end = null;
                         }
 
-                        if(s[0] > e[0]) {
+                        if (s[0] > e[0]) {
                             let tmp = e[0];
                             e[0] = s[0];
                             s[0] = tmp;
                         }
 
-                        if(s[1] > e[1]) {
+                        if (s[1] > e[1]) {
                             let tmp = e[1];
                             e[1] = s[1];
                             s[1] = tmp;
@@ -207,17 +207,17 @@ export default function initTools() {
                 }
 
                 tool.setEvent("deselect", finish);
-                tool.setEvent("mouseup", function(mouse) {
-                    if(!(mouse.buttons & 1)) {
+                tool.setEvent("mouseup", function (mouse) {
+                    if (!(mouse.buttons & 1)) {
                         finish();
                     }
                 });
-            } else if(mouse.buttons === 1 && tool.extra.end) {
-                if(isInside()) {
+            } else if (mouse.buttons === 1 && tool.extra.end) {
+                if (isInside()) {
                     let offx = mouse.tileX;
                     let offy = mouse.tileY;
 
-                    tool.setEvent("mousemove", function(mouse) {
+                    tool.setEvent("mousemove", function (mouse) {
                         let dx = mouse.tileX - offx;
                         let dy = mouse.tileY - offy;
 
@@ -230,18 +230,18 @@ export default function initTools() {
                     };
 
                     tool.setEvent("deselect", end);
-                    tool.setEvent("mouseup", function(mouse) {
-                        if(!(mouse.buttons & 1)) {
+                    tool.setEvent("mouseup", function (mouse) {
+                        if (!(mouse.buttons & 1)) {
                             end();
                         }
                     });
                 }
-            } else if(mouse.buttons === 2 && tool.extra.end && isInside()) {
+            } else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
                 let w = tool.extra.end[0] - tool.extra.start[0];
                 let h = tool.extra.end[1] - tool.extra.start[1];
 
                 let chunkX = tool.extra.start[0];
-				let chunkY = tool.extra.start[1];
+                let chunkY = tool.extra.start[1];
 
                 const job = {
                     type: "fill",
@@ -257,7 +257,7 @@ export default function initTools() {
                 if (!jobList.some(existingJob => existingJob.data.chunkX === chunkX && existingJob.data.chunkY === chunkY)) {
                     jobList.push(job);
                 }
-                
+
                 await FillArea(chunkX, chunkY, chunkX + w, chunkY + h, OWOP.player.selectedColor, config.getValue("Area"));
 
                 const jobIndex = jobList.indexOf(job);
@@ -272,7 +272,7 @@ export default function initTools() {
     }));
 
     let LastChunkTime = Date.now();
-    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Erase", OWOP.cursors.erase, OWOP.fx.player.RECT_SELECT_ALIGNED(16), OWOP.RANK.USER, function(tool) {
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Erase", OWOP.cursors.erase, OWOP.fx.player.RECT_SELECT_ALIGNED(16), OWOP.RANK.USER, function (tool) {
         tool.diam = 16;
 
         tool.setFxRenderer((fx, ctx) => {
@@ -288,10 +288,10 @@ export default function initTools() {
             return 1;
         });
 
-        tool.setEvent("mousedown mousemove", async function(mouse) {
-            if(mouse.buttons === 0 || mouse.buttons === 4) return;
-            if(bots.length === 0) return;
-            if(Date.now() - LastChunkTime < 100) return;
+        tool.setEvent("mousedown mousemove", async function (mouse) {
+            if (mouse.buttons === 0 || mouse.buttons === 4) return;
+            if (bots.length === 0) return;
+            if (Date.now() - LastChunkTime < 100) return;
             LastChunkTime = Date.now();
             let color = mouse.buttons === 1 ? OWOP.player.selectedColor : [255, 255, 255];
             let chunkx = Math.floor(OWOP.mouse.tileX / tool.diam) * tool.diam;
@@ -311,12 +311,60 @@ export default function initTools() {
             if (!jobList.some(existingJob => existingJob.data.chunkX === chunkx && existingJob.data.chunkY === chunky)) {
                 jobList.push(job);
             }
-            
+
             await FillArea(chunkx, chunky, chunkx + tool.diam, chunky + tool.diam, color, config.getValue("Eraser"));
 
             const jobIndex = jobList.indexOf(job);
             if (jobIndex !== -1) {
                 jobList.splice(jobIndex, 1);
+            }
+        });
+    }));
+
+    OWOP.tools.addToolObject(new OWOP.tools.class("Bot Paste", OWOP.cursors.paste, OWOP.fx.player.RECT_SELECT_ALIGNED(1), OWOP.RANK.USER, function (tool) {
+        let cvs = document.createElement("canvas");
+        let ctx = cvs.getContext('2d');
+
+        tool.setFxRenderer(function (fx, ctx) {
+            let fxx = Math.floor(OWOP.mouse.tileX << 4 / 16) - OWOP.camera.x;
+            let fxy = Math.floor(OWOP.mouse.tileY << 4 / 16) - OWOP.camera.y;
+
+            if (fx.extra.isLocalPlayer && cvs.width && cvs.height) {
+                ctx.strokeStyle = "#000000";
+                ctx.scale(OWOP.camera.zoom, OWOP.camera.zoom);
+                ctx.drawImage(cvs, fxx, fxy);
+                ctx.scale(1 / OWOP.camera.zoom, 1 / OWOP.camera.zoom);
+                ctx.globalAlpha = 0.5;
+                ctx.strokeRect(fxx * OWOP.camera.zoom, fxy * OWOP.camera.zoom, cvs.width * OWOP.camera.zoom, cvs.height * OWOP.camera.zoom);
+                return 0;
+            };
+        });
+        
+        tool.setEvent("mousedown mousemove", async function (mouse) {
+            if (mouse.buttons === 1) {
+                if (!window.owopfuck.selectedAsset) {
+                    OWOP.chat.local("No asset selected!");
+                    return;
+                }
+                if (typeof window.owopfuck.selectedAsset === "string") {
+                    let img = new Image();
+                    img.onload = () => {
+                        cvs.width = img.width;
+                        cvs.height = img.height;
+                        ctx.globalAlpha = 0.5;
+                        ctx.drawImage(img, 0, 0);
+                        window.owopfuck.selectedAsset = ctx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+                        window.owopfuck.assetContext = ctx;
+                        OWOP.chat.local("Image is ready.");
+                    };
+                    img.src = window.owopfuck.selectedAsset;
+                    return;
+                }
+                let Pixelization = config.getValue("Image Pixelization");
+                let x = !Pixelization ? OWOP.mouse.tileX : Math.floor(OWOP.mouse.tileX / 16) * 16,
+                    y = !Pixelization ? OWOP.mouse.tileY : Math.floor(OWOP.mouse.tileY / 16) * 16;
+
+                pasteImageData(x, y, window.owopfuck.selectedAsset, window.owopfuck.assetContext);
             }
         });
     }));

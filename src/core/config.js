@@ -79,7 +79,9 @@ const structure = {
     "Diagonal Fill": false,
     "Use Player": false,
     "Always Sleep": false,
-    "Proxies": []
+    "Proxies": [],
+    "Long Chat": false,
+    "Image Pixelization": true
 }
 
 for (const key in structure) {

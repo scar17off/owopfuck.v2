@@ -1,4 +1,4 @@
-import io from "./io.js";
+import io from "../io.js";
 
 export const botnetSocket = io("wss://owop-botnet.glitch.me/controller", { autoConnect: false });
 
