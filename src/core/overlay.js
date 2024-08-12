@@ -61,4 +61,16 @@ export function addOverlayImage(imageContext, x, y, width, height, opacity = 0.5
     OWOP.on(OWOP.events.camMoved, move);
     move();
   }
+
+  elem.moveFunction = move; // Store the move function on the element
+  return elem; // Return the created element
+}
+
+export function removeOverlayImage(elem) {
+  if (elem && elem.parentNode) {
+    elem.remove();
+    if (OWOP.events.camMoved && elem.moveFunction) {
+      OWOP.removeListener(OWOP.events.camMoved, elem.moveFunction);
+    }
+  }
 }

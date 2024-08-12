@@ -1,6 +1,6 @@
 import config from "./config.js";
 import { bots } from "./sharedState.js";
-import { addOverlayImage } from "./overlay.js";
+import { addOverlayImage, removeOverlayImage } from "./overlay.js";
 
 /**
  * Delays the execution of the next part of the code.
@@ -158,20 +158,48 @@ function getPixelColor(ctx, x, y) {
  * @param {CanvasRenderingContext2D} assetContext - The context of the canvas containing the image data.
  */
 export async function pasteImageData(x1, y1, imageData, assetContext) {
-    if (!imageData || !assetContext) {
-        console.error('ImageData or assetContext is undefined');
-        return;
-    }
+  if (!imageData) {
+    console.error('ImageData is undefined');
+    return;
+  }
 
-    addOverlayImage(assetContext, x1, y1, imageData.width, imageData.height);
+  if (!assetContext) {
+    console.warn('assetContext is undefined, creating a temporary one');
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = imageData.width;
+    tempCanvas.height = imageData.height;
+    assetContext = tempCanvas.getContext('2d');
+    assetContext.putImageData(imageData, 0, 0);
+  }
 
+  let overlayElement;
+  try {
+    overlayElement = addOverlayImage(assetContext, x1, y1, imageData.width, imageData.height);
+  } catch (error) {
+    console.warn('Failed to add overlay image:', error);
+  }
+
+  try {
     for (const [x, y] of patterns[constants[config.getValue("Paste")]](x1, y1, x1 + imageData.width - 1, y1 + imageData.height - 1)) {
-        const pixel = await OWOP.world.getPixel(x, y);
-        const color = getPixelColor(assetContext, x - x1, y - y1);
+      const pixel = await OWOP.world.getPixel(x, y);
+      const color = getPixelColor(assetContext, x - x1, y - y1);
 
-        const abc = getFree();
+      const abc = getFree();
 
-        if (colorEqual(pixel, color)) continue;
-        await setPixel(x, y, color, abc);
+      if (colorEqual(pixel, color)) continue;
+      await setPixel(x, y, color, abc);
     }
+  } finally {
+    if (overlayElement) {
+      try {
+        removeOverlayImage(overlayElement);
+      } catch (error) {
+        console.warn('Failed to remove overlay image:', error);
+        // If OWOP.off is not a function, try to remove the element manually
+        if (error.message.includes('OWOP.off is not a function')) {
+          overlayElement.remove();
+        }
+      }
+    }
+  }
 }
