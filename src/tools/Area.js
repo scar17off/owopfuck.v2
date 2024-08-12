@@ -187,5 +187,5 @@ export default function initTool() {
                 tool.extra.end = null;
             }
         });
-    })
+    });
 }

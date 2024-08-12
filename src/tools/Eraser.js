@@ -51,5 +51,5 @@ export default function initTool() {
         jobList.splice(jobIndex, 1);
       }
     });
-  })
+  });
 }

@@ -48,5 +48,5 @@ export default function initTool() {
                 pasteImageData(x, y, window.owopfuck.selectedAsset, window.owopfuck.assetContext);
             }
         });
-    })
+    });
 }

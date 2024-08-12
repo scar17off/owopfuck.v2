@@ -82,7 +82,11 @@ const structure = {
     "Proxies": [],
     "Long Chat": false,
     "Image Pixelization": true,
-    "AntiXSS": false
+    "AntiXSS": false,
+    "Area": "Horizontal",
+    "Eraser": "Horizontal",
+    "Paste": "Horizontal",
+    "Minimum Quota": 1
 }
 
 for (const key in structure) {
