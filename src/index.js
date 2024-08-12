@@ -1,13 +1,13 @@
-import initTools from "./tools.js";
 import events from "./core/events.js";
 import AimwareUI from "./core/ui-library.js";
 import config from "./core/config.js";
-import OJS from "./core/OJS.js";
+import OJS from "./components/OJS.js";
 import { bots } from "./core/sharedState.js";
 import socket from "./ws-hijacking.js";
 import { getLocalPlayer } from "./core/utils.js";
 import { botnetSocket } from "./core/botnet.js";
 import initAssets from "./assets.js";
+import initTools from "./tools.js";
 
 function appendScript(url) {
     const script = document.createElement('script');

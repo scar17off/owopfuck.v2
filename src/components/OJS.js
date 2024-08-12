@@ -1,6 +1,6 @@
 import EventEmitter from "./EventEmitter.js";
-import config from "./config.js";
-import { BotNetReplicator } from "./botnet.js";
+import config from "../core/config.js";
+import { BotNetReplicator } from "../core/botnet.js";
 
 /**
  * Logs an error message with red color formatting in the console.
@@ -250,9 +250,9 @@ class Client extends EventEmitter {
                 worldVerification: 25565
             }
         } else this.options.misc = {
-            chatVerification: OWOP.options.serverAddress[0].proto.misc.chatVerification,
-            tokenVerification: OWOP.options.serverAddress[0].proto.misc.tokenVerification,
-            worldVerification: OWOP.options.serverAddress[0].proto.misc.worldVerification
+            chatVerification: "\n",
+            tokenVerification: 'CaptchA',
+            worldVerification: 25565
         }
         OJS.chat = {
             send(msg) {

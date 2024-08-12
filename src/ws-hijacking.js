@@ -1,4 +1,4 @@
-import OJS from "./core/OJS.js";
+import OJS from "./components/OJS.js";
 import { bots } from "./core/sharedState.js";
 
 WebSocket.prototype.oldSend = WebSocket.prototype.send;
