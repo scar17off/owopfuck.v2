@@ -70,7 +70,7 @@ export default config;
 const structure = {
     "MenuKey": "F4",
     "AutoReconnect": false,
-    "Bot Nickname": '',
+    "Bot Nickname": "",
     "Auto Login": false,
     "Bot Count": 1,
     "Wolf Move": false,
@@ -86,7 +86,10 @@ const structure = {
     "Area": "Horizontal",
     "Eraser": "Horizontal",
     "Paste": "Horizontal",
-    "Minimum Quota": 1
+    "Minimum Quota": 1,
+    "Animation": "Circle",
+    "Breadcrumb Len": 1,
+    "Follow": false
 }
 
 for (const key in structure) {
