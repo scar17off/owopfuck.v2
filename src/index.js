@@ -8,6 +8,7 @@ import { getLocalPlayer } from "./core/utils.js";
 import { botnetSocket } from "./core/botnet.js";
 import initAssets from "./assets.js";
 import initTools from "./tools.js";
+import { startAnimation, stopAnimation } from "./core/animations.js";
 
 function appendScript(url) {
     const script = document.createElement('script');
@@ -23,8 +24,8 @@ function connectBot(options) {
         autoreconnect: config.getValue("Bot AutoReconnect"),
         world: OWOP.world.name,
         unsafe: location.host == "augustberchelmann.com",
-        modlogin: config.getValue("AutoLogin") ? localStorage.modlogin : undefined,
-        adminlogin: config.getValue("AutoLogin") ? localStorage.adminlogin : undefined,
+        modlogin: config.getValue("Auto Login") ? localStorage.modlogin : undefined,
+        adminlogin: config.getValue("Auto Login") ? localStorage.adminlogin : undefined,
         simpleChunks: false,
         ...options
     });
@@ -72,6 +73,12 @@ function initUI() {
             else document.getElementById("chat").style.maxWidth = "450px";
         });
 
+        ClientVisuals.addToggle("Bot Breadcrumbs", value => {
+            if(value) document.getElementById("custom-animations").style.display = "block";
+            else document.getElementById("custom-animations").style.display = "none";
+        });
+        ClientVisuals.addRange("Breadcrumb Len", 1, 50);
+
         /* Misc */
         const ClientMisc = Client.addSection("Misc");
 
@@ -86,8 +93,7 @@ function initUI() {
 
         BotMain.addInput("Bot Nickname", "Nickname");
         BotMain.addToggle("Bot AutoReconnect");
-        BotMain.addToggle("AutoLogin");
-        BotMain.addToggle("AutoLogin");
+        BotMain.addToggle("Auto Login");
         BotMain.addRange("Bot Count", 1, 10);
         
         BotMain.addButton("Connect", () => {
@@ -104,6 +110,48 @@ function initUI() {
         BotMain.addButton("Send", () => {
             bots.filter(bot => !bot.clientOptions.localplayer).forEach(bot => bot.chat.send(config.getValue("Message")));
         });
+
+        BotMain.addDropdown("Animation",
+        [
+            "Circle",
+            "Square",
+            "Star",
+            "Triangle",
+            "Pentagram",
+            "Hexagon",
+            "Infinity",
+            "X",
+            "Spiral",
+            "Line",
+            "V2",
+            "Wave",
+            "Plus",
+            "Figure8",
+            "Heart",
+            "Rose",
+            "Butterfly",
+            "Hypocycloid",
+            "Epicycloid",
+            "Lissajous",
+            "Astroid",
+            "Rhodonea",
+            "Cardioid",
+            "Spirograph"
+        ], value => {
+            stopAnimation();
+            startAnimation();
+        });
+        
+        BotMain.addToggle("Follow", value => {
+            if(value) {
+                startAnimation();
+            } else {
+                stopAnimation();
+            }
+        });
+
+        BotMain.addToggle("Tool Follow");
+        BotMain.addToggle("Paint Follow");
 
         /* Patterns */
         const BotPattern = Bot.addSection("Pattern");
@@ -260,7 +308,7 @@ function initUI() {
                     botsTable.addRow({ ID, X: 0, Y: 0, "CONNECTION.connection-cell": bot.clientOptions.connection, "RGB.rgb-cell": createColorDiv("0,0,0") });
                     return;
                 }
-                playersTable.addRow({ ID, X: 0, Y: 0, "CONNECTION.connection-cell": "🤡", "RGB.rgb-cell": createColorDiv("0,0,0") });
+                playersTable.addRow({ ID, X: 0, Y: 0, "CONNECTION.connection-cell": "ЁЯдб", "RGB.rgb-cell": createColorDiv("0,0,0") });
             }, 500);
         });
 
@@ -270,7 +318,7 @@ function initUI() {
                 botsTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": bot.clientOptions.connection, "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
                 return;
             }
-            playersTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": "🤡", "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
+            playersTable.editRow({ ID: player.id }, { ID: player.id, X: player.x, Y: player.y, "CONNECTION.connection-cell": "ЁЯдб", "RGB.rgb-cell": createColorDiv(player.rgb || "0,0,0") });
         });
 
         client.on("disconnect", player => {
